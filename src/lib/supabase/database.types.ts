@@ -427,6 +427,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      convert_approved_application_to_rental: {
+        Args: { p_application_id: string; p_start_date: string };
+        Returns: string;
+      };
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["user_role"];
