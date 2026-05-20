@@ -1,10 +1,14 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+const maxPhotoBytes = 10 * 1024 * 1024;
 
 function nullableString(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
@@ -21,6 +25,72 @@ function parsePhotoUrls(formData: FormData) {
     .split(/[\n,]+/)
     .map((url) => url.trim())
     .filter((url) => /^https?:\/\//i.test(url));
+}
+
+function safeFileName(file: File) {
+  const cleanName = file.name.replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
+  return cleanName || "vehicle-photo";
+}
+
+function getPhotoFiles(formData: FormData) {
+  return formData
+    .getAll("vehicle_photos")
+    .filter((value): value is File => value instanceof File && value.size > 0);
+}
+
+async function cleanupVehiclePhotos(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  paths: string[],
+) {
+  if (paths.length === 0) {
+    return;
+  }
+
+  await supabase.storage.from("vehicle-photos").remove(paths);
+}
+
+async function uploadVehiclePhotos({
+  files,
+  supabase,
+  userId,
+  vehicleId,
+}: {
+  files: File[];
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
+  userId: string;
+  vehicleId: string;
+}) {
+  const urls: string[] = [];
+  const paths: string[] = [];
+
+  for (const file of files) {
+    if (file.size > maxPhotoBytes) {
+      return {
+        error: "Vehicle photos must be under 10 MB each.",
+        paths,
+        urls,
+      };
+    }
+
+    const path = `${userId}/${vehicleId}/${Date.now()}-${safeFileName(file)}`;
+    const { error } = await supabase.storage
+      .from("vehicle-photos")
+      .upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false,
+      });
+
+    if (error) {
+      return { error: error.message, paths, urls };
+    }
+
+    paths.push(path);
+    urls.push(
+      supabase.storage.from("vehicle-photos").getPublicUrl(path).data.publicUrl,
+    );
+  }
+
+  return { error: null, paths, urls };
 }
 
 export async function createCustomerApplication(formData: FormData) {
@@ -49,8 +119,21 @@ export async function createCustomerApplication(formData: FormData) {
 export async function createDealerVehicle(formData: FormData) {
   const { user } = await requireRole(["dealer", "admin"]);
   const supabase = await createServerSupabaseClient();
+  const vehicleId = randomUUID();
+  const photoUpload = await uploadVehiclePhotos({
+    files: getPhotoFiles(formData),
+    supabase,
+    userId: user.id,
+    vehicleId,
+  });
+
+  if (photoUpload.error) {
+    await cleanupVehiclePhotos(supabase, photoUpload.paths);
+    redirect(`/dashboard/dealer?error=${encodeURIComponent(photoUpload.error)}`);
+  }
 
   const { error } = await supabase.from("dealer_vehicles").insert({
+    id: vehicleId,
     dealer_id: user.id,
     vin: String(formData.get("vin") ?? ""),
     year: Number(formData.get("year")),
@@ -62,7 +145,7 @@ export async function createDealerVehicle(formData: FormData) {
     city: nullableString(formData, "city"),
     state: nullableString(formData, "state"),
     vehicle_type: nullableString(formData, "vehicle_type"),
-    photo_urls: parsePhotoUrls(formData),
+    photo_urls: [...parsePhotoUrls(formData), ...photoUpload.urls],
     deposit_amount: nullableNumber(formData, "deposit_amount"),
     mileage_limit: nullableNumber(formData, "mileage_limit"),
     insurance_required: formData.get("insurance_required") === "true",
@@ -76,6 +159,7 @@ export async function createDealerVehicle(formData: FormData) {
   });
 
   if (error) {
+    await cleanupVehiclePhotos(supabase, photoUpload.paths);
     redirect(`/dashboard/dealer?error=${encodeURIComponent(error.message)}`);
   }
 

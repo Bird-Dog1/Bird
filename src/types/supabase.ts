@@ -31,6 +31,7 @@ export type Database = {
           full_name?: string | null;
           role?: AppRole;
         };
+        Relationships: [];
       };
       customer_applications: {
         Row: {
@@ -83,6 +84,22 @@ export type Database = {
           notes?: string | null;
           status?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "customer_applications_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "customer_applications_vehicle_id_fkey";
+            columns: ["vehicle_id"];
+            isOneToOne: false;
+            referencedRelation: "dealer_vehicles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       dealer_vehicles: {
         Row: {
@@ -113,6 +130,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          id?: string;
           dealer_id: string;
           vin: string;
           year: number;
@@ -159,6 +177,15 @@ export type Database = {
           description?: string | null;
           status?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "dealer_vehicles_dealer_id_fkey";
+            columns: ["dealer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;

@@ -2,6 +2,7 @@ import { createDealerVehicle } from "@/app/dashboard/actions";
 import { FormSection } from "@/components/forms/form-section";
 import { SelectField, TextareaField, TextField } from "@/components/forms/form-field";
 import { SubmitButton } from "@/components/forms/submit-button";
+import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth/guards";
 
 type DealerDashboardPageProps = {
@@ -85,6 +86,21 @@ export default async function DealerDashboardPage({
             name="description"
             placeholder="Add customer-facing listing details."
           />
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="vehicle_photos">
+              Vehicle photo uploads
+            </label>
+            <Input
+              accept="image/*"
+              id="vehicle_photos"
+              multiple
+              name="vehicle_photos"
+              type="file"
+            />
+            <p className="text-xs text-muted-foreground">
+              Upload public listing photos to the Supabase vehicle-photos bucket.
+            </p>
+          </div>
           <TextareaField
             hint="Paste public Supabase Storage URLs or other public image URLs, one per line."
             label="Photo URLs"

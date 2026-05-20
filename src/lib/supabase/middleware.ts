@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { pathWithSearch, safeRedirectPath } from "@/lib/auth/redirects";
 import { getSupabaseEnv } from "@/lib/env";
 import { type AppRole } from "@/types/app";
+import { type Database } from "@/types/supabase";
 
 const authRoutes = ["/login", "/signup"];
-const publicRoutes = ["/", "/auth/callback", "/auth/auth-code-error"];
+const publicRoutes = ["/", "/auth/callback", "/auth/auth-code-error", "/vehicles"];
 const roleRoutes: Array<{ prefix: string; roles: AppRole[] }> = [
   { prefix: "/dashboard/customer", roles: ["customer", "admin"] },
   { prefix: "/dashboard/dealer", roles: ["dealer", "admin"] },
@@ -34,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, anonKey } = getSupabaseEnv();
 
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient<Database>(url, anonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -58,12 +60,20 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublicPath(pathname) && !isAuthPath(pathname)) {
     const loginUrl = redirectUrl(request, "/login");
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.searchParams.set(
+      "next",
+      pathWithSearch(pathname, request.nextUrl.search),
+    );
     return NextResponse.redirect(loginUrl);
   }
 
   if (user && isAuthPath(pathname)) {
-    return NextResponse.redirect(redirectUrl(request, "/dashboard"));
+    return NextResponse.redirect(
+      redirectUrl(
+        request,
+        safeRedirectPath(request.nextUrl.searchParams.get("next")),
+      ),
+    );
   }
 
   const route = matchingRoleRoute(pathname);

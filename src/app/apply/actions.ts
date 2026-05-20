@@ -54,14 +54,15 @@ async function uploadDocument({
   applicationId,
   file,
   label,
+  supabase,
   userId,
 }: {
   applicationId: string;
   file: File;
   label: string;
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
   userId: string;
 }) {
-  const supabase = await createServerSupabaseClient();
   const path = `${userId}/${applicationId}/${label}-${Date.now()}-${safeFileName(file)}`;
   const { error } = await supabase.storage
     .from("vehicle-documents")
@@ -71,6 +72,17 @@ async function uploadDocument({
     });
 
   return { path, error };
+}
+
+async function cleanupUploadedDocuments(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  paths: string[],
+) {
+  if (paths.length === 0) {
+    return;
+  }
+
+  await supabase.storage.from("vehicle-documents").remove(paths);
 }
 
 export async function submitRentalApplication(formData: FormData) {
@@ -111,6 +123,7 @@ export async function submitRentalApplication(formData: FormData) {
     applicationId,
     file: driverLicense,
     label: "drivers-license",
+    supabase,
     userId: user.id,
   });
 
@@ -122,10 +135,12 @@ export async function submitRentalApplication(formData: FormData) {
     applicationId,
     file: proofOfInsurance,
     label: "proof-of-insurance",
+    supabase,
     userId: user.id,
   });
 
   if (insuranceUpload.error) {
+    await cleanupUploadedDocuments(supabase, [licenseUpload.path]);
     redirect(errorPath(vehicleId, insuranceUpload.error.message));
   }
 
@@ -147,6 +162,10 @@ export async function submitRentalApplication(formData: FormData) {
   });
 
   if (error) {
+    await cleanupUploadedDocuments(supabase, [
+      licenseUpload.path,
+      insuranceUpload.path,
+    ]);
     redirect(errorPath(vehicleId, error.message));
   }
 

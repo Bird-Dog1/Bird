@@ -22,7 +22,7 @@ export default async function RootLayout({
   const session = await getCurrentUserProfile();
 
   return (
-    <html lang="en">
+    <html data-scroll-behavior="smooth" lang="en">
       <body className="font-sans antialiased">
         <SiteHeader
           email={session?.profile.email ?? session?.user.email}

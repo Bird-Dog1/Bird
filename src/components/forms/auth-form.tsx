@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { safeRedirectPath } from "@/lib/auth/redirects";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -20,7 +21,7 @@ type AuthFormProps = {
 
 export function AuthForm({ mode, error, message, next }: AuthFormProps) {
   const isSignup = mode === "signup";
-  const nextPath = next && next.startsWith("/") ? next : "/dashboard";
+  const nextPath = safeRedirectPath(next);
 
   return (
     <Card className="mx-auto w-full max-w-md">
