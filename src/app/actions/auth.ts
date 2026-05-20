@@ -5,9 +5,20 @@ import { redirect } from "next/navigation";
 
 import { safeRedirectPath } from "@/lib/auth/redirects";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { appRoles, type AppRole } from "@/types/app";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+}
+
+function roleFromForm(formData: FormData): AppRole {
+  const role = formData.get("role");
+
+  if (typeof role === "string" && appRoles.includes(role as AppRole)) {
+    return role as AppRole;
+  }
+
+  return "customer";
 }
 
 export async function signIn(formData: FormData) {
@@ -33,6 +44,7 @@ export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
+  const role = roleFromForm(formData);
   const next = safeRedirectPath(formData.get("next"));
   const supabase = await createServerSupabaseClient();
   const callbackUrl = new URL("/auth/callback", siteUrl());
@@ -45,7 +57,7 @@ export async function signUp(formData: FormData) {
       emailRedirectTo: callbackUrl.toString(),
       data: {
         full_name: fullName,
-        role: "customer",
+        role,
       },
     },
   });

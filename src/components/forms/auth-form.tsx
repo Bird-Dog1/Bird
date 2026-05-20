@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { signIn, signUp } from "@/app/actions/auth";
-import { TextField } from "@/components/forms/form-field";
+import { SelectField, TextField } from "@/components/forms/form-field";
 import { SubmitButton } from "@/components/forms/submit-button";
 import {
   Card,
@@ -29,7 +29,7 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
         <CardTitle>{isSignup ? "Create your account" : "Welcome back"}</CardTitle>
         <CardDescription>
           {isSignup
-            ? "Create a customer account to apply for monthly dealership rentals."
+            ? "Start as a customer or dealer using Supabase Auth."
             : "Sign in to browse, apply, or track your Bird Dog applications."}
         </CardDescription>
       </CardHeader>
@@ -53,7 +53,10 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
                 name="full_name"
                 required
               />
-              <input name="role" type="hidden" value="customer" />
+              <SelectField label="Account type" name="role" required>
+                <option value="customer">Customer</option>
+                <option value="dealer">Dealer</option>
+              </SelectField>
             </>
           ) : null}
           <TextField
