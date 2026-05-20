@@ -2,9 +2,10 @@ import { type Route } from "next";
 import { redirect } from "next/navigation";
 
 import { roleHome } from "@/lib/auth/roles";
-import { isMissingSupabaseEnvError } from "@/lib/env";
+import { getOptionalSupabaseEnv, isMissingSupabaseEnvError } from "@/lib/env";
+import { routeWithParams } from "@/lib/redirects";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { type AppRole, type Profile } from "@/types/app";
+import { appRoles, type AppRole } from "@/types/app";
 
 export async function getCurrentUserProfile() {
   let supabase;
@@ -32,7 +33,7 @@ export async function getCurrentUserProfile() {
     .select("id,email,full_name,role,created_at,updated_at")
     .eq("id", user.id)
     .single();
-  const profile = data as Profile | null;
+  const profile = data && appRoles.includes(data.role) ? data : null;
 
   if (error || !profile) {
     return null;
@@ -42,10 +43,19 @@ export async function getCurrentUserProfile() {
 }
 
 export async function requireUserProfile(nextPath: Route = "/dashboard") {
+  if (!getOptionalSupabaseEnv()) {
+    redirect(
+      routeWithParams("/login", {
+        error: "Supabase environment variables are not configured.",
+        next: nextPath,
+      }),
+    );
+  }
+
   const session = await getCurrentUserProfile();
 
   if (!session) {
-    redirect(`/login?next=${encodeURIComponent(nextPath)}` as Route);
+    redirect(routeWithParams("/login", { next: nextPath }));
   }
 
   return session;

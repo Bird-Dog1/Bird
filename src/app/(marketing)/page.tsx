@@ -28,7 +28,7 @@ export default function LandingPage() {
             Monthly vehicle access for customers and dealerships
           </div>
           <div className="space-y-5">
-            <h1 className="max-w-4xl text-5xl font-bold tracking-tight sm:text-6xl">
+            <h1 className="max-w-4xl text-balance break-words text-4xl font-bold tracking-tight sm:text-6xl">
               Rent dealership vehicles monthly instead of financing.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">

@@ -216,7 +216,7 @@ security definer
 set search_path = public
 as $$
   select auth.uid() is null
-    or coalesce(public.current_user_role() in ('customer', 'admin'), false)
+    or coalesce(public.current_user_role() in ('customer', 'dealer', 'admin'), false)
 $$;
 
 create or replace function public.user_has_dealership(p_dealership_id uuid)
@@ -540,9 +540,9 @@ with check (
   and public.is_vehicle_public(vehicle_id)
 );
 
-create policy "rental_applications_insert_dealer_or_admin"
+create policy "rental_applications_insert_admin"
 on public.rental_applications for insert
-with check (public.can_access_dealership(dealership_id));
+with check (public.is_admin());
 
 create policy "rental_applications_update_dealer_or_admin"
 on public.rental_applications for update

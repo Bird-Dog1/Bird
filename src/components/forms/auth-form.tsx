@@ -72,14 +72,20 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
             required
             type="password"
           />
-          {!isSignup ? <input name="next" type="hidden" value={next ?? "/dashboard"} /> : null}
-          <SubmitButton className="w-full" pendingLabel={isSignup ? "Creating..." : "Signing in..."}>
+          <input name="next" type="hidden" value={next ?? "/dashboard"} />
+          <SubmitButton
+            className="w-full"
+            pendingLabel={isSignup ? "Creating..." : "Signing in..."}
+          >
             {isSignup ? "Create account" : "Sign in"}
           </SubmitButton>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {isSignup ? "Already have an account?" : "Need an account?"}{" "}
-          <Link className="font-medium text-primary hover:underline" href={isSignup ? "/login" : "/signup"}>
+          <Link
+            className="font-medium text-primary hover:underline"
+            href={isSignup ? "/login" : "/signup"}
+          >
             {isSignup ? "Sign in" : "Create one"}
           </Link>
         </p>
