@@ -42,7 +42,9 @@ script, not from public signup.
 
 ## Routes
 
-- `/` landing page shell
+- `/` landing page
+- `/inventory` public live vehicle marketplace
+- `/inventory/[vehicleId]` public vehicle detail page
 - `/login` Supabase email/password sign in
 - `/signup` customer/dealer signup
 - `/dashboard` authenticated dashboard shell

@@ -38,12 +38,14 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
-              <Link href="/signup">
-                Apply or list inventory <ArrowRight className="h-4 w-4" />
+              <Link href="/inventory">
+                Browse vehicles <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="/login">Sign in</Link>
+              <Link href="/signup">
+                Apply or list inventory
+              </Link>
             </Button>
           </div>
         </div>

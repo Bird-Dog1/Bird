@@ -13,6 +13,12 @@ export async function createCustomerApplication(formData: FormData) {
   const vehicleId = String(formData.get("vehicle_id") ?? "");
   const customerNotes = String(formData.get("customer_notes") ?? "");
 
+  if (!vehicleId) {
+    redirect(
+      `/dashboard/customer?error=${encodeURIComponent("Select a vehicle before applying.")}`,
+    );
+  }
+
   const { error } = await supabase.from("rental_applications").insert({
     vehicle_id: vehicleId,
     customer_id: user.id,
@@ -28,7 +34,7 @@ export async function createCustomerApplication(formData: FormData) {
 }
 
 export async function createDealerVehicle(formData: FormData) {
-  const { user } = await requireRole(["dealer", "admin"]);
+  const { profile, user } = await requireRole(["dealer", "admin"]);
   const supabase = await createServerSupabaseClient();
 
   const monthlyPrice = Number(formData.get("monthly_price"));
@@ -36,19 +42,27 @@ export async function createDealerVehicle(formData: FormData) {
   const mileageLimit = Number(formData.get("mileage_limit"));
   const dealershipId = String(formData.get("dealership_id") ?? "");
 
-  const { data: dealerUser, error: dealerUserError } = await supabase
-    .from("dealer_users")
-    .select("dealership_id")
-    .eq("dealership_id", dealershipId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (dealerUserError || !dealerUser) {
+  if (!dealershipId) {
     redirect(
-      `/dashboard/dealer?error=${encodeURIComponent(
-        "You must be assigned to this dealership before adding vehicles.",
-      )}`,
+      `/dashboard/dealer?error=${encodeURIComponent("Select a dealership before saving.")}`,
     );
+  }
+
+  if (profile.role !== "admin") {
+    const { data: dealerUser, error: dealerUserError } = await supabase
+      .from("dealer_users")
+      .select("dealership_id")
+      .eq("dealership_id", dealershipId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (dealerUserError || !dealerUser) {
+      redirect(
+        `/dashboard/dealer?error=${encodeURIComponent(
+          "You must be assigned to this dealership before adding vehicles.",
+        )}`,
+      );
+    }
   }
 
   const { error } = await supabase.from("vehicles").insert({
@@ -70,5 +84,10 @@ export async function createDealerVehicle(formData: FormData) {
   }
 
   revalidatePath("/dashboard/dealer");
-  redirect("/dashboard/dealer?message=Vehicle saved.");
+  revalidatePath("/inventory");
+  redirect(
+    `/dashboard/dealer?dealership_id=${encodeURIComponent(
+      dealershipId,
+    )}&message=Vehicle saved.`,
+  );
 }
