@@ -43,6 +43,7 @@ export async function signUp(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
   const role = roleFromForm(formData);
+  const next = String(formData.get("next") ?? "/dashboard");
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase.auth.signUp({
@@ -61,7 +62,12 @@ export async function signUp(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/login?message=Check your email to confirm your account.");
+  const params = new URLSearchParams({
+    message: "Check your email to confirm your account.",
+    next: next.startsWith("/") ? next : "/dashboard",
+  });
+
+  redirect(`/login?${params.toString()}`);
 }
 
 export async function signOut() {

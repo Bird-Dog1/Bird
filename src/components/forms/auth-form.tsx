@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { signIn, signUp } from "@/app/actions/auth";
-import { TextField, SelectField } from "@/components/forms/form-field";
+import { TextField } from "@/components/forms/form-field";
 import { SubmitButton } from "@/components/forms/submit-button";
 import {
   Card,
@@ -20,6 +20,7 @@ type AuthFormProps = {
 
 export function AuthForm({ mode, error, message, next }: AuthFormProps) {
   const isSignup = mode === "signup";
+  const nextPath = next && next.startsWith("/") ? next : "/dashboard";
 
   return (
     <Card className="mx-auto w-full max-w-md">
@@ -27,8 +28,8 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
         <CardTitle>{isSignup ? "Create your account" : "Welcome back"}</CardTitle>
         <CardDescription>
           {isSignup
-            ? "Start as a customer or dealer using Supabase Auth."
-            : "Sign in to continue to your Bird Dog dashboard."}
+            ? "Create a customer account to apply for monthly dealership rentals."
+            : "Sign in to browse, apply, or track your Bird Dog applications."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,10 +52,7 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
                 name="full_name"
                 required
               />
-              <SelectField label="Account type" name="role" required>
-                <option value="customer">Customer</option>
-                <option value="dealer">Dealer</option>
-              </SelectField>
+              <input name="role" type="hidden" value="customer" />
             </>
           ) : null}
           <TextField
@@ -72,14 +70,17 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
             required
             type="password"
           />
-          {!isSignup ? <input name="next" type="hidden" value={next ?? "/dashboard"} /> : null}
+          <input name="next" type="hidden" value={nextPath} />
           <SubmitButton className="w-full" pendingLabel={isSignup ? "Creating..." : "Signing in..."}>
             {isSignup ? "Create account" : "Sign in"}
           </SubmitButton>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {isSignup ? "Already have an account?" : "Need an account?"}{" "}
-          <Link className="font-medium text-primary hover:underline" href={isSignup ? "/login" : "/signup"}>
+          <Link
+            className="font-medium text-primary hover:underline"
+            href={isSignup ? `/login?next=${encodeURIComponent(nextPath)}` : `/signup?next=${encodeURIComponent(nextPath)}`}
+          >
             {isSignup ? "Sign in" : "Create one"}
           </Link>
         </p>

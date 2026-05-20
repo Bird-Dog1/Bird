@@ -39,8 +39,8 @@ export async function requireUserProfile(nextPath: Route = "/dashboard") {
   return session;
 }
 
-export async function requireRole(roles: AppRole[]) {
-  const session = await requireUserProfile();
+export async function requireRole(roles: AppRole[], nextPath?: Route) {
+  const session = await requireUserProfile(nextPath);
 
   if (!roles.includes(session.profile.role)) {
     redirect(roleHome[session.profile.role]);
