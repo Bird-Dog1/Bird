@@ -1,10 +1,6 @@
 import { createCustomerApplication } from "@/app/dashboard/actions";
 import { FormSection } from "@/components/forms/form-section";
-import {
-  SelectField,
-  TextareaField,
-  TextField,
-} from "@/components/forms/form-field";
+import { TextareaField, TextField } from "@/components/forms/form-field";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { requireRole } from "@/lib/auth/guards";
 
@@ -38,23 +34,15 @@ export default async function CustomerDashboardPage({
         </p>
       ) : null}
       <FormSection
-        description="Foundation form for real monthly vehicle applications."
-        title="Customer application"
+        description="Submit an application for an available vehicle."
+        title="Rental application"
       >
         <form action={createCustomerApplication} className="grid gap-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <TextField label="Monthly budget" min={0} name="monthly_budget" required type="number" />
-            <SelectField label="Primary use" name="primary_use" required>
-              <option value="">Select use</option>
-              <option value="rideshare">Uber or Lyft</option>
-              <option value="personal">Personal transportation</option>
-              <option value="between_vehicles">Between vehicles</option>
-            </SelectField>
-          </div>
+          <TextField label="Vehicle ID" name="vehicle_id" required />
           <TextareaField
-            label="Transportation needs"
-            name="transportation_needs"
-            placeholder="Describe timing, vehicle type, and location requirements."
+            label="Customer notes"
+            name="customer_notes"
+            placeholder="Describe timing, intended use, and any questions for the dealer."
             required
           />
           <SubmitButton pendingLabel="Saving application...">

@@ -134,6 +134,36 @@ begin
 end;
 $$;
 
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  requested_role text := new.raw_user_meta_data ->> 'role';
+  assigned_role public.user_role := 'customer';
+begin
+  if requested_role = 'dealer' then
+    assigned_role := 'dealer';
+  end if;
+
+  insert into public.profiles (id, email, full_name, role)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data ->> 'full_name',
+    assigned_role
+  );
+
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_user();
+
 create trigger set_profiles_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();

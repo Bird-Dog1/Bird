@@ -256,7 +256,7 @@ export type Database = {
           id?: string;
           vehicle_id: string;
           customer_id: string;
-          dealership_id: string;
+          dealership_id?: string;
           status?: Database["public"]["Enums"]["application_status"];
           customer_notes?: string | null;
           dealer_notes?: string | null;
@@ -349,7 +349,7 @@ export type Database = {
           id?: string;
           vehicle_id: string;
           customer_id: string;
-          dealership_id: string;
+          dealership_id?: string;
           application_id?: string | null;
           start_date: string;
           end_date?: string | null;
