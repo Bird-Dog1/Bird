@@ -40,6 +40,13 @@ type QueryResult<T> = {
 export default async function InventoryPage({ searchParams }: InventoryPageProps) {
   const params = await searchParams;
   const result = await getInventory(params);
+  const hasFilters = Boolean(
+    clean(params.city) ||
+      clean(params.state) ||
+      clean(params.make) ||
+      clean(params.vehicle_type) ||
+      params.rideshare === "true",
+  );
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -59,7 +66,9 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
         <Card>
           <CardHeader>
             <CardTitle>Filter inventory</CardTitle>
-            <CardDescription>Search by market, make, vehicle type, or rideshare fit.</CardDescription>
+            <CardDescription>
+              Search by market, make, vehicle type, or rideshare fit.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form className="grid gap-3 sm:grid-cols-2" action="/inventory">
@@ -104,7 +113,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
         </p>
       ) : null}
       {result.status === "ready" && result.vehicles.length === 0 ? (
-        <EmptyInventory />
+        <EmptyInventory hasFilters={hasFilters} />
       ) : null}
       {result.status === "ready" && result.vehicles.length > 0 ? (
         <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -155,15 +164,27 @@ function clean(value?: string) {
   return trimmed || undefined;
 }
 
-function EmptyInventory() {
+function EmptyInventory({ hasFilters }: { hasFilters: boolean }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>No vehicles match that search yet</CardTitle>
+        <CardTitle>
+          {hasFilters ? "No vehicles match that search yet" : "Inventory is ready for launch data"}
+        </CardTitle>
         <CardDescription>
-          Clear the filters or check back after more approved dealer inventory is loaded.
+          {hasFilters
+            ? "Clear the filters or check back after more approved dealer inventory is loaded."
+            : "Supabase is connected. Add an approved dealership and available vehicles to publish live listings here."}
         </CardDescription>
       </CardHeader>
+      <CardContent className="flex flex-col gap-3 sm:flex-row">
+        <Button asChild>
+          <Link href="/signup">Create an account</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/login">Sign in</Link>
+        </Button>
+      </CardContent>
     </Card>
   );
 }
