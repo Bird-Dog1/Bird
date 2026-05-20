@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { type Route } from "next";
 
 import { updateDealershipProfile } from "@/app/dashboard/actions";
 import { DealerPageHeader, EmptyState, StatusMessage } from "@/components/dealer/dealer-shell";
@@ -52,7 +53,7 @@ export default async function DealerSettingsPage({ searchParams }: SettingsPageP
                     size="sm"
                     variant={item.id === dealership.id ? "default" : "outline"}
                   >
-                    <Link href={`/dashboard/dealer/settings${dealershipQuery(item)}`}>
+                    <Link href={`/dashboard/dealer/settings${dealershipQuery(item)}` as Route}>
                       {item.name}
                     </Link>
                   </Button>

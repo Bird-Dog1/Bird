@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import {
   approveDealerApplication,
   convertDealerApplicationToRental,
@@ -151,9 +149,9 @@ export default async function DealerApplicationDetailPage({
                     </div>
                     {document.signedUrl ? (
                       <Button asChild variant="outline">
-                        <Link href={document.signedUrl} target="_blank">
+                        <a href={document.signedUrl} rel="noreferrer" target="_blank">
                           View upload
-                        </Link>
+                        </a>
                       </Button>
                     ) : (
                       <p className="text-sm text-muted-foreground">Preview unavailable</p>

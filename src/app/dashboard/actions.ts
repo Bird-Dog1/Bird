@@ -410,7 +410,7 @@ function nullableString(value: FormDataEntryValue | null) {
 }
 
 function redirectWithError(path: Route | string, message: string): never {
-  redirect(`${path}?error=${encodeURIComponent(message)}`);
+  redirect(`${path}?error=${encodeURIComponent(message)}` as Route);
 }
 
 function revalidateDealerPaths() {

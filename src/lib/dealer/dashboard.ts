@@ -261,7 +261,7 @@ async function listAssignedDealerships(supabase: DealerSupabase, userId: string)
     return [];
   }
 
-  return data.map((item) => item.dealerships).filter(Boolean) as Dealership[];
+  return data.flatMap((item) => item.dealerships ?? []) as unknown as Dealership[];
 }
 
 async function listAdminDealerships(supabase: DealerSupabase) {

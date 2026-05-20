@@ -12,7 +12,7 @@ type ApplicationStatus = Database["public"]["Enums"]["application_status"];
 type PageHeaderProps = {
   title: string;
   description: string;
-  actionHref?: Route;
+  actionHref?: Route | string;
   actionLabel?: string;
 };
 
@@ -33,7 +33,7 @@ export function DealerPageHeader({
       </div>
       {actionHref && actionLabel ? (
         <Button asChild className="w-full sm:w-auto">
-          <Link href={actionHref}>{actionLabel}</Link>
+          <Link href={actionHref as Route}>{actionLabel}</Link>
         </Button>
       ) : null}
     </div>
@@ -78,7 +78,7 @@ export function EmptyState({
         </div>
         {actionHref && actionLabel ? (
           <Button asChild className="mx-auto w-full sm:w-auto">
-            <Link href={actionHref}>{actionLabel}</Link>
+            <Link href={actionHref as Route}>{actionLabel}</Link>
           </Button>
         ) : null}
       </CardContent>

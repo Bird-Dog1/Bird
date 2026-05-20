@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { type Route } from "next";
 
 import {
   DealerPageHeader,
@@ -109,7 +110,7 @@ export default async function DealerDashboardPage({
           <CardHeader className="flex flex-row items-center justify-between gap-4">
             <CardTitle>Recent inventory</CardTitle>
             <Button asChild size="sm" variant="outline">
-              <Link href={`/dashboard/dealer/inventory${query}`}>View all</Link>
+              <Link href={`/dashboard/dealer/inventory${query}` as Route}>View all</Link>
             </Button>
           </CardHeader>
           <CardContent className="grid gap-3">
@@ -141,7 +142,7 @@ export default async function DealerDashboardPage({
           <CardHeader className="flex flex-row items-center justify-between gap-4">
             <CardTitle>Applications inbox</CardTitle>
             <Button asChild size="sm" variant="outline">
-              <Link href={`/dashboard/dealer/applications${query}`}>View all</Link>
+              <Link href={`/dashboard/dealer/applications${query}` as Route}>View all</Link>
             </Button>
           </CardHeader>
           <CardContent className="grid gap-3">
