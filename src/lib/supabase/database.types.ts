@@ -423,6 +423,10 @@ export type Database = {
         Args: { p_vehicle_id: string };
         Returns: boolean;
       };
+      can_view_public_listings: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["user_role"];

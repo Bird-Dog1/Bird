@@ -178,6 +178,17 @@ as $$
   select coalesce(public.current_user_role() = 'admin', false)
 $$;
 
+create or replace function public.can_view_public_listings()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select auth.uid() is null
+    or coalesce(public.current_user_role() in ('customer', 'admin'), false)
+$$;
+
 create or replace function public.user_has_dealership(p_dealership_id uuid)
 returns boolean
 language sql
@@ -402,7 +413,10 @@ with check (id = auth.uid() or public.is_admin());
 
 create policy "dealerships_select_public_dealer_or_admin"
 on public.dealerships for select
-using ((approved = true and suspended = false) or public.can_access_dealership(id));
+using (
+  (approved = true and suspended = false and public.can_view_public_listings())
+  or public.can_access_dealership(id)
+);
 
 create policy "dealerships_admin_insert"
 on public.dealerships for insert
@@ -436,7 +450,11 @@ using (public.is_admin());
 
 create policy "vehicles_select_public_available"
 on public.vehicles for select
-using (status = 'available' and public.is_dealership_public(dealership_id));
+using (
+  status = 'available'
+  and public.is_dealership_public(dealership_id)
+  and public.can_view_public_listings()
+);
 
 create policy "vehicles_select_dealer_or_admin"
 on public.vehicles for select
@@ -457,7 +475,7 @@ using (public.can_access_dealership(dealership_id));
 
 create policy "vehicle_photos_select_public_vehicle"
 on public.vehicle_photos for select
-using (public.is_vehicle_public(vehicle_id));
+using (public.is_vehicle_public(vehicle_id) and public.can_view_public_listings());
 
 create policy "vehicle_photos_select_dealer_or_admin"
 on public.vehicle_photos for select

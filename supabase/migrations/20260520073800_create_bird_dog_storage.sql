@@ -54,7 +54,10 @@ on storage.objects for select
 using (
   bucket_id = 'vehicle-photos'
   and (
-    public.is_vehicle_public(public.storage_path_first_uuid(name))
+    (
+      public.is_vehicle_public(public.storage_path_first_uuid(name))
+      and public.can_view_public_listings()
+    )
     or public.can_manage_vehicle(public.storage_path_first_uuid(name))
   )
 );
