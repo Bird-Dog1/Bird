@@ -36,6 +36,7 @@ export async function signIn(formData: FormData) {
   }
 
   const supabase = await getConfiguredSupabaseOrRedirect("/login");
+  await ensureSupabaseSchemaReady(supabase, "/login", next);
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -46,6 +47,25 @@ export async function signIn(formData: FormData) {
     redirect(
       routeWithParams("/login", {
         error: "Invalid email or password.",
+        next,
+      }),
+    );
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .single();
+
+  if (
+    profileError ||
+    !profile ||
+    !appRoles.includes(profile.role)
+  ) {
+    await supabase.auth.signOut();
+    redirect(
+      routeWithParams("/login", {
+        error: "Your account profile is not ready. Run the Supabase setup and try again.",
         next,
       }),
     );
@@ -71,6 +91,7 @@ export async function signUp(formData: FormData) {
   }
 
   const supabase = await getConfiguredSupabaseOrRedirect("/signup");
+  await ensureSupabaseSchemaReady(supabase, "/signup", next);
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -121,6 +142,23 @@ async function getConfiguredSupabaseOrRedirect(pathname: string) {
     }
 
     throw error;
+  }
+}
+
+async function ensureSupabaseSchemaReady(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  pathname: "/login" | "/signup",
+  next: string,
+) {
+  const { error } = await supabase.from("profiles").select("id").limit(1);
+
+  if (error) {
+    redirect(
+      routeWithParams(pathname, {
+        error: "Supabase is connected, but the Bird Dog schema is not set up.",
+        next,
+      }),
+    );
   }
 }
 
