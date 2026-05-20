@@ -21,9 +21,17 @@ export function SiteHeader({ role, email }: SiteHeaderProps) {
           <span>Bird Dog</span>
         </Link>
         <nav className="flex items-center gap-2 text-sm">
+          <Link className="hidden text-muted-foreground hover:text-foreground sm:block" href="/vehicles">
+            Browse
+          </Link>
           {role ? (
             <>
-              <Link className="hidden text-muted-foreground sm:block" href="/dashboard">
+              {role === "customer" ? (
+                <Link className="hidden text-muted-foreground hover:text-foreground md:block" href="/applications">
+                  My applications
+                </Link>
+              ) : null}
+              <Link className="hidden text-muted-foreground hover:text-foreground lg:block" href="/dashboard">
                 {roleLabels[role]} dashboard
               </Link>
               <span className="hidden max-w-48 truncate text-muted-foreground md:block">
@@ -38,10 +46,10 @@ export function SiteHeader({ role, email }: SiteHeaderProps) {
           ) : (
             <>
               <Button asChild size="sm" variant="ghost">
-                <Link href="/login">Sign in</Link>
+                <Link href="/login">Customer login</Link>
               </Button>
               <Button asChild size="sm">
-                <Link href="/signup">Get started</Link>
+                <Link href="/signup">Sign up</Link>
               </Button>
             </>
           )}
