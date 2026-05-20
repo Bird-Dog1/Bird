@@ -2,11 +2,23 @@ import { type Route } from "next";
 import { redirect } from "next/navigation";
 
 import { roleHome } from "@/lib/auth/roles";
+import { isMissingSupabaseEnvError } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type AppRole, type Profile } from "@/types/app";
 
 export async function getCurrentUserProfile() {
-  const supabase = await createServerSupabaseClient();
+  let supabase;
+
+  try {
+    supabase = await createServerSupabaseClient();
+  } catch (error) {
+    if (isMissingSupabaseEnvError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

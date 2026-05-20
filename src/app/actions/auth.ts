@@ -3,6 +3,7 @@
 import { type Route } from "next";
 import { redirect } from "next/navigation";
 
+import { isMissingSupabaseEnvError } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { appRoles, type AppRole } from "@/types/app";
 
@@ -24,7 +25,7 @@ export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/dashboard");
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getConfiguredSupabaseOrRedirect("/login");
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -43,7 +44,7 @@ export async function signUp(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
   const role = roleFromForm(formData);
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getConfiguredSupabaseOrRedirect("/signup");
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -65,8 +66,24 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signOut() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getConfiguredSupabaseOrRedirect("/");
 
   await supabase.auth.signOut();
   redirect("/");
+}
+
+async function getConfiguredSupabaseOrRedirect(pathname: string) {
+  try {
+    return await createServerSupabaseClient();
+  } catch (error) {
+    if (isMissingSupabaseEnvError(error)) {
+      redirect(
+        `${pathname}?error=${encodeURIComponent(
+          "Supabase environment variables are not configured.",
+        )}` as Route,
+      );
+    }
+
+    throw error;
+  }
 }
