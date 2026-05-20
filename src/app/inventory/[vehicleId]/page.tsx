@@ -18,7 +18,7 @@ import {
 } from "@/components/vehicles/vehicle-card";
 import { isMissingSupabaseEnvError } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getAvailableVehicleById } from "@/lib/supabase/queries";
+import { getAvailableVehicleById, type SupabaseClientLike } from "@/lib/supabase/queries";
 
 type VehicleDetailsPageProps = {
   params: Promise<{
@@ -145,8 +145,9 @@ export default async function VehicleDetailsPage({ params }: VehicleDetailsPageP
 async function getVehicle(vehicleId: string) {
   try {
     const supabase = await createServerSupabaseClient();
+    const queryClient = supabase as unknown as SupabaseClientLike;
     const { data, error } = await (getAvailableVehicleById(
-      supabase,
+      queryClient,
       vehicleId,
     ) as unknown as Promise<QueryResult<VehicleListing>>);
 

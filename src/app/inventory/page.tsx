@@ -12,7 +12,11 @@ import {
 import { TextField } from "@/components/forms/form-field";
 import { isMissingSupabaseEnvError } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { listAvailableVehicles, type VehicleFilters } from "@/lib/supabase/queries";
+import {
+  listAvailableVehicles,
+  type SupabaseClientLike,
+  type VehicleFilters,
+} from "@/lib/supabase/queries";
 
 export const metadata = {
   title: "Browse vehicles",
@@ -125,8 +129,9 @@ async function getInventory(params: Awaited<InventoryPageProps["searchParams"]>)
 
   try {
     const supabase = await createServerSupabaseClient();
+    const queryClient = supabase as unknown as SupabaseClientLike;
     const { data, error } = await (listAvailableVehicles(
-      supabase,
+      queryClient,
       filters,
     ) as unknown as Promise<QueryResult<VehicleListing[]>>);
 

@@ -16,7 +16,11 @@ import {
 } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { listAvailableVehicles, listCustomerApplications } from "@/lib/supabase/queries";
+import {
+  listAvailableVehicles,
+  listCustomerApplications,
+  type SupabaseClientLike,
+} from "@/lib/supabase/queries";
 
 export const metadata = {
   title: "Customer workspace",
@@ -58,11 +62,12 @@ export default async function CustomerDashboardPage({
   const { user } = await requireRole(["customer", "admin"]);
   const params = await searchParams;
   const supabase = await createServerSupabaseClient();
+  const queryClient = supabase as unknown as SupabaseClientLike;
   const [vehicleResult, applicationResult] = await Promise.all([
-    listAvailableVehicles(supabase, { limit: 50 }) as unknown as Promise<
+    listAvailableVehicles(queryClient, { limit: 50 }) as unknown as Promise<
       QueryResult<VehicleListing[]>
     >,
-    listCustomerApplications(supabase, user.id, { limit: 10 }) as unknown as Promise<
+    listCustomerApplications(queryClient, user.id, { limit: 10 }) as unknown as Promise<
       QueryResult<CustomerApplication[]>
     >,
   ]);

@@ -17,7 +17,11 @@ import {
 } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { listDealerApplications, listDealerVehicles } from "@/lib/supabase/queries";
+import {
+  listDealerApplications,
+  listDealerVehicles,
+  type SupabaseClientLike,
+} from "@/lib/supabase/queries";
 
 type DealerDashboardPageProps = {
   searchParams: Promise<{
@@ -55,16 +59,19 @@ export default async function DealerDashboardPage({
   const { profile, user } = await requireRole(["dealer", "admin"]);
   const params = await searchParams;
   const supabase = await createServerSupabaseClient();
+  const queryClient = supabase as unknown as SupabaseClientLike;
   const dealerships = await getDealerships(supabase, user.id, profile.role === "admin");
   const selectedDealershipId = params.dealership_id ?? dealerships[0]?.id ?? "";
   const [vehicleResult, applicationResult] = selectedDealershipId
     ? await Promise.all([
-        listDealerVehicles(supabase, selectedDealershipId, { limit: 20 }) as unknown as Promise<
+        listDealerVehicles(queryClient, selectedDealershipId, { limit: 20 }) as unknown as Promise<
           QueryResult<VehicleListing[]>
         >,
-        listDealerApplications(supabase, selectedDealershipId, { limit: 10 }) as unknown as Promise<
-          QueryResult<DealerApplication[]>
-        >,
+        listDealerApplications(
+          queryClient,
+          selectedDealershipId,
+          { limit: 10 },
+        ) as unknown as Promise<QueryResult<DealerApplication[]>>,
       ])
     : [
         { data: [], error: null },

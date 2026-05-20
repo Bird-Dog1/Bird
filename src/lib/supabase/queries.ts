@@ -2,13 +2,17 @@ import type { Database, TablesInsert, TablesUpdate } from "./database.types";
 
 type TableName = keyof Database["public"]["Tables"];
 
+type SupabaseFromLike = {
+  select: (columns?: string) => SupabaseQueryLike;
+  insert: (values: object | object[]) => SupabaseQueryLike;
+  update: (values: object) => SupabaseQueryLike;
+};
+
 type SupabaseQueryLike = {
   select: (columns?: string) => SupabaseQueryLike;
   eq: (column: string, value: unknown) => SupabaseQueryLike;
   order: (column: string, options: { ascending: boolean }) => SupabaseQueryLike;
   limit: (count: number) => SupabaseQueryLike;
-  insert: (values: unknown) => SupabaseQueryLike;
-  update: (values: unknown) => SupabaseQueryLike;
   single: () => unknown;
   maybeSingle: () => unknown;
 };
@@ -18,7 +22,7 @@ type SupabaseStorageBucketLike = {
 };
 
 export type SupabaseClientLike = {
-  from: (table: TableName) => SupabaseQueryLike;
+  from: (table: TableName) => SupabaseFromLike;
   storage: {
     from: (bucket: "vehicle-photos" | "application-documents") => SupabaseStorageBucketLike;
   };
