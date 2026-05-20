@@ -11,7 +11,15 @@ const dashboardLinks: Array<{
   roles: AppRole[];
 }> = [
   { href: "/dashboard/customer", label: "Customer workspace", roles: ["customer", "admin"] },
-  { href: "/dashboard/dealer", label: "Dealer workspace", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer", label: "Dealer home", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer/inventory", label: "Inventory", roles: ["dealer", "admin"] },
+  {
+    href: "/dashboard/dealer/applications",
+    label: "Applications",
+    roles: ["dealer", "admin"],
+  },
+  { href: "/dashboard/dealer/rentals", label: "Active rentals", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer/settings", label: "Settings", roles: ["dealer", "admin"] },
   { href: "/dashboard/admin", label: "Admin console", roles: ["admin"] },
 ];
 
