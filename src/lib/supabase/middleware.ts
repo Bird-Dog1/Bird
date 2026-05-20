@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-import { getSupabaseEnv } from "@/lib/env";
+import { getOptionalSupabaseEnv } from "@/lib/env";
 import { type AppRole } from "@/types/app";
 
 const authRoutes = ["/login", "/signup"];
@@ -32,7 +32,24 @@ function redirectUrl(request: NextRequest, pathname: string) {
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
-  const { url, anonKey } = getSupabaseEnv();
+  const pathname = request.nextUrl.pathname;
+  const env = getOptionalSupabaseEnv();
+
+  if (!env) {
+    if (isPublicPath(pathname) || isAuthPath(pathname)) {
+      return response;
+    }
+
+    const loginUrl = redirectUrl(request, "/login");
+    loginUrl.searchParams.set("next", pathname);
+    loginUrl.searchParams.set(
+      "error",
+      "Supabase environment variables are not configured.",
+    );
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const { url, anonKey } = env;
 
   const supabase = createServerClient(url, anonKey, {
     cookies: {
@@ -51,7 +68,6 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const pathname = request.nextUrl.pathname;
   const {
     data: { user },
   } = await supabase.auth.getUser();
