@@ -12,7 +12,12 @@ const dashboardLinks: Array<{
 }> = [
   { href: "/dashboard/customer", label: "Customer workspace", roles: ["customer", "admin"] },
   { href: "/dashboard/dealer", label: "Dealer workspace", roles: ["dealer", "admin"] },
-  { href: "/dashboard/admin", label: "Admin console", roles: ["admin"] },
+  { href: "/dashboard/admin", label: "Admin home", roles: ["admin"] },
+  { href: "/dashboard/admin/dealerships", label: "Dealership approvals", roles: ["admin"] },
+  { href: "/dashboard/admin/users", label: "User management", roles: ["admin"] },
+  { href: "/dashboard/admin/vehicles", label: "All vehicles", roles: ["admin"] },
+  { href: "/dashboard/admin/applications", label: "All applications", roles: ["admin"] },
+  { href: "/dashboard/admin/rentals", label: "All rentals", roles: ["admin"] },
 ];
 
 type DashboardNavProps = {
