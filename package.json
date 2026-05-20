@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "supabase:preflight": "node scripts/supabase-preflight.mjs",
     "typecheck": "tsc --noEmit"
   },
   "repository": {

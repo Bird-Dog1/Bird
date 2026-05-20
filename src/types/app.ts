@@ -4,7 +4,7 @@ export type AppRole = (typeof appRoles)[number];
 
 export type Profile = {
   id: string;
-  email: string | null;
+  email: string;
   full_name: string | null;
   role: AppRole;
   created_at: string;

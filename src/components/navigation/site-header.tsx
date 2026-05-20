@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { signOut } from "@/app/actions/auth";
+import { SubmitButton } from "@/components/forms/submit-button";
 import { Button } from "@/components/ui/button";
 import { roleLabels } from "@/lib/auth/roles";
 import { type AppRole } from "@/types/app";
@@ -23,16 +24,17 @@ export function SiteHeader({ role, email }: SiteHeaderProps) {
         <nav className="flex items-center gap-2 text-sm">
           {role ? (
             <>
-              <Link className="hidden text-muted-foreground sm:block" href="/dashboard">
-                {roleLabels[role]} dashboard
+              <Link className="text-muted-foreground hover:text-foreground" href="/dashboard">
+                <span className="sm:hidden">Dashboard</span>
+                <span className="hidden sm:inline">{roleLabels[role]} dashboard</span>
               </Link>
               <span className="hidden max-w-48 truncate text-muted-foreground md:block">
                 {email}
               </span>
               <form action={signOut}>
-                <Button size="sm" type="submit" variant="secondary">
+                <SubmitButton pendingLabel="Signing out..." size="sm" variant="secondary">
                   Sign out
-                </Button>
+                </SubmitButton>
               </form>
             </>
           ) : (

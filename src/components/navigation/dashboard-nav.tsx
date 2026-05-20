@@ -23,13 +23,13 @@ export function DashboardNav({ role }: DashboardNavProps) {
   const visibleLinks = dashboardLinks.filter((link) => link.roles.includes(role));
 
   return (
-    <aside className="rounded-3xl border border-border bg-card/70 p-4">
-      <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+    <aside className="rounded-3xl border border-border bg-card/70 p-3 lg:p-4">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground lg:mb-4">
         {roleLabels[role]}
       </p>
-      <nav className="grid gap-2">
+      <nav className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">
         <Link
-          className="rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="shrink-0 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
           href="/dashboard"
         >
           Overview
@@ -37,7 +37,7 @@ export function DashboardNav({ role }: DashboardNavProps) {
         {visibleLinks.map((link) => (
           <Link
             className={cn(
-              "rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground",
+              "shrink-0 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground",
             )}
             href={link.href}
             key={link.href}

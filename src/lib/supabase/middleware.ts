@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import { getOptionalSupabaseEnv } from "@/lib/env";
-import { type AppRole } from "@/types/app";
+import { type Database } from "@/lib/supabase/database.types";
+import { appRoles, type AppRole } from "@/types/app";
 
 const authRoutes = ["/login", "/signup"];
 const publicRoutes = ["/", "/auth/callback", "/auth/auth-code-error"];
@@ -51,7 +52,7 @@ export async function updateSession(request: NextRequest) {
 
   const { url, anonKey } = env;
 
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient<Database>(url, anonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -90,7 +91,7 @@ export async function updateSession(request: NextRequest) {
       .select("role")
       .eq("id", user.id)
       .single();
-    const profile = data as { role: AppRole } | null;
+    const profile = data && appRoles.includes(data.role) ? data : null;
 
     if (!profile || !route.roles.includes(profile.role)) {
       return NextResponse.redirect(redirectUrl(request, "/dashboard"));
