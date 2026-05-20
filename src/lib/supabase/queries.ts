@@ -2,10 +2,25 @@ import type { Database, TablesInsert, TablesUpdate } from "./database.types";
 
 type TableName = keyof Database["public"]["Tables"];
 
+type SupabaseQueryLike = {
+  select: (columns?: string) => SupabaseQueryLike;
+  eq: (column: string, value: unknown) => SupabaseQueryLike;
+  order: (column: string, options: { ascending: boolean }) => SupabaseQueryLike;
+  limit: (count: number) => SupabaseQueryLike;
+  insert: (values: unknown) => SupabaseQueryLike;
+  update: (values: unknown) => SupabaseQueryLike;
+  single: () => unknown;
+  maybeSingle: () => unknown;
+};
+
+type SupabaseStorageBucketLike = {
+  upload: (path: string, file: File | Blob) => unknown;
+};
+
 export type SupabaseClientLike = {
-  from: (table: TableName) => any;
+  from: (table: TableName) => SupabaseQueryLike;
   storage: {
-    from: (bucket: "vehicle-photos" | "application-documents") => any;
+    from: (bucket: "vehicle-photos" | "application-documents") => SupabaseStorageBucketLike;
   };
 };
 
@@ -280,7 +295,7 @@ export function uploadApplicationDocument(
     .upload(applicationDocumentPath(applicationId, fileName), file);
 }
 
-function applyVehicleFilters(query: any, filters: VehicleFilters) {
+function applyVehicleFilters(query: SupabaseQueryLike, filters: VehicleFilters) {
   let next = query;
 
   if (filters.city) {
@@ -310,7 +325,7 @@ function applyVehicleFilters(query: any, filters: VehicleFilters) {
   return next;
 }
 
-function applyApplicationFilters(query: any, filters: ApplicationFilters) {
+function applyApplicationFilters(query: SupabaseQueryLike, filters: ApplicationFilters) {
   let next = query;
 
   if (filters.status) {
