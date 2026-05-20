@@ -85,35 +85,31 @@ async function checkTables() {
 }
 
 async function checkBuckets() {
-  const response = await supabaseFetch("/storage/v1/bucket");
+  for (const bucket of requiredBuckets) {
+    const response = await supabaseFetch(`/storage/v1/object/list/${bucket}`, {
+      body: JSON.stringify({ limit: 1, offset: 0, prefix: "" }),
+      method: "POST",
+    });
 
-  if (!response.ok) {
-    const error = await safeJson(response);
-    failures.push(
-      `Storage bucket listing failed (${error.code ?? response.status}: ${
-        error.message ?? response.statusText
-      }).`,
-    );
-    return;
-  }
-
-  const buckets = await response.json();
-  const bucketIds = new Set(
-    Array.isArray(buckets) ? buckets.map((bucket) => bucket.id) : [],
-  );
-
-  requiredBuckets.forEach((bucket) => {
-    if (!bucketIds.has(bucket)) {
-      failures.push(`${bucket} storage bucket is missing.`);
+    if (!response.ok) {
+      const error = await safeJson(response);
+      failures.push(
+        `${bucket} storage bucket is unavailable (${
+          error.statusCode ?? error.code ?? response.status
+        }: ${error.message ?? response.statusText}).`,
+      );
     }
-  });
+  }
 }
 
-function supabaseFetch(path) {
+function supabaseFetch(path, init = {}) {
   return fetch(`${supabaseUrl}${path}`, {
+    ...init,
     headers: {
       apikey: supabaseAnonKey,
       Authorization: `Bearer ${supabaseAnonKey}`,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...init.headers,
     },
   });
 }
