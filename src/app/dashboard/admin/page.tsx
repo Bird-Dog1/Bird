@@ -52,8 +52,11 @@ type RecentApplication = {
   id: string;
   status: string;
   created_at: string;
-  dealerships: { name: string } | null;
-  vehicles: { year: number; make: string; model: string } | null;
+  dealerships: { name: string } | Array<{ name: string }> | null;
+  vehicles:
+    | { year: number; make: string; model: string }
+    | Array<{ year: number; make: string; model: string }>
+    | null;
 };
 
 export default async function AdminDashboardPage({
@@ -244,26 +247,31 @@ export default async function AdminDashboardPage({
               </TableHead>
               <tbody>
                 {((recentApplications.data ?? []) as RecentApplication[]).map(
-                  (application) => (
-                    <tr className="border-b border-border/60" key={application.id}>
-                      <TableCell>
-                        <p className="font-medium">
-                          {application.vehicles
-                            ? `${application.vehicles.year} ${application.vehicles.make} ${application.vehicles.model}`
-                            : "Vehicle unavailable"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {application.dealerships?.name ?? "Dealership unavailable"}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge tone={statusTone(application.status)}>
-                          {application.status.replace("_", " ")}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>{formatDate(application.created_at)}</TableCell>
-                    </tr>
-                  ),
+                  (application) => {
+                    const vehicle = firstRelation(application.vehicles);
+                    const dealership = firstRelation(application.dealerships);
+
+                    return (
+                      <tr className="border-b border-border/60" key={application.id}>
+                        <TableCell>
+                          <p className="font-medium">
+                            {vehicle
+                              ? `${vehicle.year} ${vehicle.make} ${vehicle.model}`
+                              : "Vehicle unavailable"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {dealership?.name ?? "Dealership unavailable"}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge tone={statusTone(application.status)}>
+                            {application.status.replace("_", " ")}
+                          </StatusBadge>
+                        </TableCell>
+                        <TableCell>{formatDate(application.created_at)}</TableCell>
+                      </tr>
+                    );
+                  },
                 )}
               </tbody>
             </AdminTable>
@@ -273,7 +281,7 @@ export default async function AdminDashboardPage({
     </div>
   );
 }
-      </Card>
-    </div>
-  );
+
+function firstRelation<T>(relation: T | T[] | null) {
+  return Array.isArray(relation) ? (relation[0] ?? null) : relation;
 }

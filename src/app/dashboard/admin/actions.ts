@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { type Route } from "next";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/guards";
@@ -73,5 +74,5 @@ function redirectWithMessage(
   key: "error" | "message",
   message: string,
 ): never {
-  redirect(`${path}?${key}=${encodeURIComponent(message)}`);
+  redirect(`${path}?${key}=${encodeURIComponent(message)}` as Route);
 }
