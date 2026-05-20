@@ -1,3 +1,4 @@
+import { type Route } from "next";
 import { redirect } from "next/navigation";
 
 import { roleHome } from "@/lib/auth/roles";
@@ -28,11 +29,11 @@ export async function getCurrentUserProfile() {
   return { user, profile };
 }
 
-export async function requireUserProfile() {
+export async function requireUserProfile(nextPath: Route = "/dashboard") {
   const session = await getCurrentUserProfile();
 
   if (!session) {
-    redirect("/login");
+    redirect(`/login?next=${encodeURIComponent(nextPath)}` as Route);
   }
 
   return session;
