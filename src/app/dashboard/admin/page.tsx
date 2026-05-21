@@ -1,43 +1,12 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import Link from "next/link";
+import type { Route } from "next";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const metadata = {
-  title: "Admin console",
-};
-
-export default async function AdminDashboardPage() {
-  await requireRole(["admin"]);
-
-  return (
-    <div className="grid gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin console</CardTitle>
-          <CardDescription>
-            Operational shell for reviewing customers, dealers, applications,
-            vehicles, and platform controls.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          {["Customers", "Dealers", "Inventory"].map((label) => (
-            <div
-              className="rounded-2xl border border-border bg-background/40 p-4"
-              key={label}
-            >
-              <p className="text-sm font-semibold">{label}</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Connected to Supabase policies and ready for real data views.
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+export const metadata = { title: "Admin console" };
+export default async function AdminDashboardPage() { await requireRole(["admin"]); const supabase = await createServerSupabaseClient(); const [users, dealerships, vehicles, applications, rentals] = await Promise.all([supabase.from("profiles").select("id", { count: "exact", head: true }), supabase.from("dealerships").select("id", { count: "exact", head: true }), supabase.from("vehicles").select("id", { count: "exact", head: true }), supabase.from("rental_applications").select("id", { count: "exact", head: true }), supabase.from("rentals").select("id", { count: "exact", head: true })]); return <div className="space-y-6"><section className="rounded-3xl border border-border bg-card/70 p-6"><h1 className="text-3xl font-bold">Admin dashboard</h1><p className="mt-2 text-muted-foreground">Approve dealerships and monitor real platform data.</p></section><div className="grid gap-4 md:grid-cols-5"><Metric label="Users" value={users.count ?? 0} /><Metric label="Dealerships" value={dealerships.count ?? 0} /><Metric label="Vehicles" value={vehicles.count ?? 0} /><Metric label="Applications" value={applications.count ?? 0} /><Metric label="Rentals" value={rentals.count ?? 0} /></div><div className="grid gap-4 sm:grid-cols-2"><Action href="/dashboard/admin/dealerships" title="Approve dealerships" /><Action href="/dashboard/admin/users" title="Manage users" /><Action href="/dashboard/admin/vehicles" title="View vehicles" /><Action href="/dashboard/admin/applications" title="View applications" /></div></div>; }
+function Metric({ label, value }: { label: string; value: number }) { return <Card><CardContent className="p-5"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-3xl font-bold">{value}</p></CardContent></Card>; }
+function Action({ href, title }: { href: Route; title: string }) { return <Card><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent><Button asChild><Link href={href}>{title}</Link></Button></CardContent></Card>; }

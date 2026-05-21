@@ -21,6 +21,9 @@ export function SiteHeader({ role, email }: SiteHeaderProps) {
           <span>Bird Dog</span>
         </Link>
         <nav className="flex items-center gap-2 text-sm">
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/vehicles">Browse</Link>
+          </Button>
           {role ? (
             <>
               <Link className="hidden text-muted-foreground sm:block" href="/dashboard">

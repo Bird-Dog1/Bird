@@ -407,6 +407,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      assert_dealer_cannot_toggle_dealership_flags: {
+        Args: Record<PropertyKey, never>;
+        Returns: unknown;
+      };
       can_access_application: {
         Args: { p_application_id: string };
         Returns: boolean;
@@ -430,6 +434,18 @@ export type Database = {
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["user_role"];
+      };
+      create_dealership_for_current_dealer: {
+        Args: {
+          p_name: string;
+          p_address: string;
+          p_city: string;
+          p_state: string;
+          p_zip: string;
+          p_phone: string;
+          p_website: string;
+        };
+        Returns: string;
       };
       is_admin: {
         Args: Record<PropertyKey, never>;
