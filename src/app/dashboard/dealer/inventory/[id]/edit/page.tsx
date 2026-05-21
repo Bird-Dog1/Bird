@@ -1,0 +1,16 @@
+import Image from "next/image";
+import Link from "next/link";
+import { updateVehicle } from "@/app/dashboard/dealer/actions";
+import { MessageBanner } from "@/components/app/message-banner";
+import { VehicleForm } from "@/components/dealer/vehicle-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireRole } from "@/lib/auth/guards";
+import { listAccessibleDealerships } from "@/lib/bird-dog/dealer-data";
+import { vehicleTitle } from "@/lib/bird-dog/format";
+import type { DealerVehicle } from "@/lib/bird-dog/types";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { signVehiclePhotos } from "@/lib/supabase/storage";
+
+export const metadata = { title: "Edit vehicle" };
+export default async function EditVehiclePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; message?: string }> }) { const { id } = await params; const query = await searchParams; const { user, profile } = await requireRole(["dealer", "admin"]); const supabase = await createServerSupabaseClient(); const [{ data: dealerships }, { data, error }] = await Promise.all([listAccessibleDealerships(supabase, user.id, profile.role), supabase.from("vehicles").select("*, vehicle_photos (id, vehicle_id, photo_url, sort_order, created_at, updated_at)").eq("id", id).maybeSingle()]); if (error || !data) return <Card><CardContent className="space-y-4 p-6"><p className="text-muted-foreground">{error?.message ?? "Vehicle not found or access denied."}</p><Button asChild><Link href="/dashboard/dealer/inventory">Back to inventory</Link></Button></CardContent></Card>; const rawVehicle = data as DealerVehicle; const vehicle = { ...rawVehicle, vehicle_photos: await signVehiclePhotos(supabase, rawVehicle.vehicle_photos) }; return <div className="space-y-6"><div><h1 className="text-3xl font-bold">Edit {vehicleTitle(vehicle)}</h1><p className="mt-2 text-muted-foreground">Update pricing, terms, status, and photos.</p></div><MessageBanner error={query.error} message={query.message} />{vehicle.vehicle_photos.length > 0 ? <Card><CardHeader><CardTitle>Vehicle photos</CardTitle></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{vehicle.vehicle_photos.map((photo, index) => <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-secondary" key={photo.id}>{photo.signed_url ? <Image alt={`${vehicleTitle(vehicle)} photo ${index + 1}`} className="object-cover" fill sizes="(min-width: 1024px) 25vw, 50vw" src={photo.signed_url} /> : <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Photo unavailable</div>}</div>)}</CardContent></Card> : null}<Card><CardHeader><CardTitle>Vehicle details</CardTitle></CardHeader><CardContent><VehicleForm action={updateVehicle} dealerships={dealerships} vehicle={vehicle} /></CardContent></Card></div>; }

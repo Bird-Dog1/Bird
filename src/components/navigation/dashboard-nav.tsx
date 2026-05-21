@@ -2,7 +2,6 @@ import Link from "next/link";
 import { type Route } from "next";
 
 import { roleLabels } from "@/lib/auth/roles";
-import { cn } from "@/lib/utils";
 import { type AppRole } from "@/types/app";
 
 const dashboardLinks: Array<{
@@ -10,16 +9,22 @@ const dashboardLinks: Array<{
   label: string;
   roles: AppRole[];
 }> = [
-  { href: "/dashboard/customer", label: "Customer workspace", roles: ["customer", "admin"] },
-  { href: "/dashboard/dealer", label: "Dealer workspace", roles: ["dealer", "admin"] },
-  { href: "/dashboard/admin", label: "Admin console", roles: ["admin"] },
+  { href: "/dashboard/customer", label: "Customer home", roles: ["customer", "admin"] },
+  { href: "/dashboard/customer/applications", label: "My applications", roles: ["customer", "admin"] },
+  { href: "/dashboard/dealer", label: "Dealer home", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer/inventory", label: "Inventory", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer/applications", label: "Applications", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer/rentals", label: "Active rentals", roles: ["dealer", "admin"] },
+  { href: "/dashboard/dealer/settings", label: "Dealership settings", roles: ["dealer", "admin"] },
+  { href: "/dashboard/admin", label: "Admin home", roles: ["admin"] },
+  { href: "/dashboard/admin/dealerships", label: "Dealership approvals", roles: ["admin"] },
+  { href: "/dashboard/admin/users", label: "Users", roles: ["admin"] },
+  { href: "/dashboard/admin/vehicles", label: "All vehicles", roles: ["admin"] },
+  { href: "/dashboard/admin/applications", label: "All applications", roles: ["admin"] },
+  { href: "/dashboard/admin/rentals", label: "All rentals", roles: ["admin"] },
 ];
 
-type DashboardNavProps = {
-  role: AppRole;
-};
-
-export function DashboardNav({ role }: DashboardNavProps) {
+export function DashboardNav({ role }: { role: AppRole }) {
   const visibleLinks = dashboardLinks.filter((link) => link.roles.includes(role));
 
   return (
@@ -36,9 +41,7 @@ export function DashboardNav({ role }: DashboardNavProps) {
         </Link>
         {visibleLinks.map((link) => (
           <Link
-            className={cn(
-              "rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground",
-            )}
+            className="rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
             href={link.href}
             key={link.href}
           >

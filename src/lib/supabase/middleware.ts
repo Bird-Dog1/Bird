@@ -5,7 +5,7 @@ import { getOptionalSupabaseEnv } from "@/lib/env";
 import { type AppRole } from "@/types/app";
 
 const authRoutes = ["/login", "/signup"];
-const publicRoutes = ["/", "/auth/callback", "/auth/auth-code-error"];
+const publicRoutes = ["/", "/vehicles", "/auth/callback", "/auth/auth-code-error"];
 const roleRoutes: Array<{ prefix: string; roles: AppRole[] }> = [
   { prefix: "/dashboard/customer", roles: ["customer", "admin"] },
   { prefix: "/dashboard/dealer", roles: ["dealer", "admin"] },

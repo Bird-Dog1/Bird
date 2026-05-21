@@ -1,55 +1,16 @@
-import { createCustomerApplication } from "@/app/dashboard/actions";
-import { FormSection } from "@/components/forms/form-section";
-import { TextareaField, TextField } from "@/components/forms/form-field";
-import { SubmitButton } from "@/components/forms/submit-button";
+import Link from "next/link";
+
+import { EmptyState } from "@/components/app/empty-state";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const metadata = {
-  title: "Customer workspace",
-};
+export const metadata = { title: "Customer workspace" };
 
-type CustomerDashboardPageProps = {
-  searchParams: Promise<{
-    error?: string;
-    message?: string;
-  }>;
-};
-
-export default async function CustomerDashboardPage({
-  searchParams,
-}: CustomerDashboardPageProps) {
-  await requireRole(["customer", "admin"]);
-  const params = await searchParams;
-
-  return (
-    <div className="space-y-6">
-      {params.error ? (
-        <p className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm">
-          {params.error}
-        </p>
-      ) : null}
-      {params.message ? (
-        <p className="rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-accent">
-          {params.message}
-        </p>
-      ) : null}
-      <FormSection
-        description="Submit an application for an available vehicle."
-        title="Rental application"
-      >
-        <form action={createCustomerApplication} className="grid gap-4">
-          <TextField label="Vehicle ID" name="vehicle_id" required />
-          <TextareaField
-            label="Customer notes"
-            name="customer_notes"
-            placeholder="Describe timing, intended use, and any questions for the dealer."
-            required
-          />
-          <SubmitButton pendingLabel="Saving application...">
-            Submit application
-          </SubmitButton>
-        </form>
-      </FormSection>
-    </div>
-  );
+export default async function CustomerDashboardPage() {
+  const { user } = await requireRole(["customer", "admin"]);
+  const supabase = await createServerSupabaseClient();
+  const { data: applications, error } = await supabase.from("rental_applications").select("id, status, created_at").eq("customer_id", user.id).order("created_at", { ascending: false }).limit(3);
+  return <div className="space-y-6"><section className="rounded-3xl border border-border bg-card/70 p-6"><h1 className="text-3xl font-bold">Customer dashboard</h1><p className="mt-2 text-muted-foreground">Browse vehicles, submit applications, and track dealership decisions.</p><Button asChild className="mt-5"><Link href="/vehicles">Browse available vehicles</Link></Button></section>{error ? <EmptyState title="Applications could not load" description={error.message} /> : applications && applications.length > 0 ? <Card><CardHeader><CardTitle>Recent applications</CardTitle></CardHeader><CardContent className="space-y-3">{applications.map((application) => <div className="flex flex-col justify-between gap-2 rounded-2xl border border-border bg-background/40 p-4 sm:flex-row" key={application.id}><div><p className="font-medium">Application {application.id.slice(0, 8)}</p><p className="text-sm capitalize text-muted-foreground">{application.status.replaceAll("_", " ")}</p></div><Button asChild variant="outline"><Link href="/dashboard/customer/applications">View status</Link></Button></div>)}</CardContent></Card> : <EmptyState action={<Button asChild><Link href="/vehicles">Find a vehicle</Link></Button>} description="Applications submitted through vehicle pages will appear here." title="No applications yet" />}</div>;
 }
