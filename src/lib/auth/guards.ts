@@ -29,7 +29,7 @@ export async function getCurrentUserProfile() {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id,email,full_name,role,created_at,updated_at")
+    .select("id,email,full_name,phone,role,created_at,updated_at")
     .eq("id", user.id)
     .single();
   const profile = data as Profile | null;
@@ -41,7 +41,7 @@ export async function getCurrentUserProfile() {
   return { user, profile };
 }
 
-export async function requireUserProfile(nextPath: Route = "/dashboard") {
+export async function requireUserProfile(nextPath = "/dashboard") {
   const session = await getCurrentUserProfile();
 
   if (!session) {
@@ -51,8 +51,8 @@ export async function requireUserProfile(nextPath: Route = "/dashboard") {
   return session;
 }
 
-export async function requireRole(roles: AppRole[]) {
-  const session = await requireUserProfile();
+export async function requireRole(roles: AppRole[], nextPath = "/dashboard") {
+  const session = await requireUserProfile(nextPath);
 
   if (!roles.includes(session.profile.role)) {
     redirect(roleHome[session.profile.role]);

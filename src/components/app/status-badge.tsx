@@ -13,12 +13,17 @@ const tones = {
   cancelled: "border-white/10 bg-white/[0.05] text-muted-foreground",
 } as const;
 
+const labels: Record<string, string> = {
+  submitted: "pending",
+};
+
 export function StatusBadge({ value }: { value: string }) {
   const tone = tones[value as keyof typeof tones] ?? "border-white/10 bg-white/[0.05] text-muted-foreground";
+  const label = labels[value] ?? value.replaceAll("_", " ");
 
   return (
     <span className={cn("inline-flex rounded-full border px-3 py-1 text-xs font-semibold capitalize tracking-wide", tone)}>
-      {value.replaceAll("_", " ")}
+      {label}
     </span>
   );
 }
