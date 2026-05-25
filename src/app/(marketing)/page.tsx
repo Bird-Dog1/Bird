@@ -305,7 +305,7 @@ function BenefitPanel({
               <span>{item}</span>
             </li>
           ))}
-      </ul>
+        </ul>
       </CardContent>
     </Card>
   );
