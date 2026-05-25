@@ -465,18 +465,3 @@ function BenefitGrid({
     </div>
   );
 }
-      </section>
-    </main>
-  );
-}
-
-function AudienceList({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div>
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-primary">{title}</h2>
-      <ul className="space-y-2 text-sm text-muted-foreground">
-        {items.map((item) => <li className="flex gap-2" key={item}><span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent" /><span>{item}</span></li>)}
-      </ul>
-    </div>
-  );
-}
