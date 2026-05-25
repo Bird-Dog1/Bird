@@ -9,17 +9,17 @@ const dealerInventory = ["Aged inventory", "Punched units", "R units", "Service 
 
 export default function LandingPage() {
   return (
-    <main>
-      <section className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8 lg:py-28">
-        <div className="space-y-8">
-          <div className="inline-flex rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground">
+    <main className="overflow-hidden">
+      <section className="mx-auto grid max-w-7xl gap-14 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-28">
+        <div className="space-y-9">
+          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-muted-foreground shadow-xl shadow-black/20 backdrop-blur">
             Monthly vehicle access for customers and dealerships
           </div>
           <div className="space-y-5">
-            <h1 className="max-w-4xl text-5xl font-bold tracking-tight sm:text-6xl">
+            <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">
               Monthly dealership rentals without traditional financing.
             </h1>
-            <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
+            <p className="max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
               Browse available dealership vehicles, apply online, and let the dealership handle final approval, contract, and payment.
             </p>
           </div>
@@ -27,13 +27,14 @@ export default function LandingPage() {
             <Button asChild size="lg"><Link href="/vehicles">Browse vehicles <ArrowRight className="h-4 w-4" /></Link></Button>
             <Button asChild size="lg" variant="outline"><Link href="/signup">Create customer account</Link></Button>
           </div>
-          <p className="text-sm text-muted-foreground">Approval is not guaranteed. Valid license and active insurance required.</p>
+          <p className="max-w-xl text-sm leading-6 text-muted-foreground">Approval is not guaranteed. Valid license and active insurance required.</p>
         </div>
-        <Card className="self-start">
-          <CardContent className="space-y-6 p-6">
+        <Card className="relative self-start overflow-hidden border-white/15">
+          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          <CardContent className="space-y-7 p-6 sm:p-8">
             <div className="grid gap-4 sm:grid-cols-3">
               {[{ icon: Search, label: "Browse" }, { icon: ClipboardCheck, label: "Apply" }, { icon: ShieldCheck, label: "Dealer review" }].map(({ icon: Icon, label }) => (
-                <div className="rounded-2xl border border-border bg-background/40 p-4" key={label}>
+                <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4 shadow-lg shadow-black/20" key={label}>
                   <Icon className="mb-4 h-6 w-6 text-primary" />
                   <p className="font-semibold">{label}</p>
                 </div>
@@ -55,8 +56,8 @@ function AudienceList({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-primary">{title}</h2>
-      <ul className="space-y-2 text-sm text-muted-foreground">
-        {items.map((item) => <li className="flex gap-2" key={item}><span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent" /><span>{item}</span></li>)}
+      <ul className="space-y-2.5 text-sm text-muted-foreground">
+        {items.map((item) => <li className="flex gap-2" key={item}><span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent shadow-sm shadow-white/20" /><span>{item}</span></li>)}
       </ul>
     </div>
   );

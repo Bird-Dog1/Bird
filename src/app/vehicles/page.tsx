@@ -27,15 +27,19 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
   const { data, error } = await query;
   const vehicles = error ? [] : await signPublicVehicles(supabase, (data ?? []) as PublicVehicle[]);
   return (
-    <main className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <section className="space-y-4"><p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Bird Dog marketplace</p><h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Monthly dealership rentals without traditional financing.</h1><p className="max-w-3xl text-muted-foreground">Approval is not guaranteed. Valid license and active insurance required. Final approval, contract, and payment are handled by the dealership.</p></section>
-      <form className="grid gap-4 rounded-3xl border border-border bg-card/70 p-4 md:grid-cols-4 lg:grid-cols-8">
+    <main className="mx-auto max-w-7xl space-y-10 px-4 py-12 sm:px-6 lg:px-8">
+      <section className="space-y-5">
+        <p className="text-sm font-semibold uppercase tracking-[0.32em] text-primary">Bird Dog marketplace</p>
+        <h1 className="max-w-5xl text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Monthly dealership rentals without traditional financing.</h1>
+        <p className="max-w-3xl text-lg leading-8 text-muted-foreground">Approval is not guaranteed. Valid license and active insurance required. Final approval, contract, and payment are handled by the dealership.</p>
+      </section>
+      <form className="grid gap-4 rounded-[2rem] border border-white/10 bg-card/85 p-4 shadow-2xl shadow-black/25 backdrop-blur-xl md:grid-cols-4 lg:grid-cols-8">
         <FilterField label="City" name="city" value={params.city} /><FilterField label="State" name="state" value={params.state} /><FilterField label="Max monthly" name="max_price" type="number" value={params.max_price} /><FilterField label="Make" name="make" value={params.make} /><FilterField label="Model" name="model" value={params.model} /><FilterField label="Type" name="vehicle_type" value={params.vehicle_type} />
-        <div className="space-y-2"><Label htmlFor="rideshare_allowed">Rideshare</Label><select className="flex h-11 w-full rounded-xl border border-input bg-background/60 px-3 py-2 text-sm text-foreground" defaultValue={params.rideshare_allowed ?? ""} id="rideshare_allowed" name="rideshare_allowed"><option value="">Any</option><option value="true">Allowed</option></select></div>
+        <div className="space-y-2.5"><Label htmlFor="rideshare_allowed">Rideshare</Label><select className="flex h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground shadow-inner shadow-black/20 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50" defaultValue={params.rideshare_allowed ?? ""} id="rideshare_allowed" name="rideshare_allowed"><option value="">Any</option><option value="true">Allowed</option></select></div>
         <div className="flex items-end gap-2"><Button className="flex-1" type="submit">Search</Button><Button asChild variant="outline"><Link href="/vehicles">Clear</Link></Button></div>
       </form>
       {error ? <EmptyState title="Vehicles could not load" description={error.message} /> : vehicles.length === 0 ? <EmptyState title="No vehicles match your search" description="Try widening your filters or check back when dealerships add more available inventory." /> : <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{vehicles.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} />)}</div>}
     </main>
   );
 }
-function FilterField({ label, name, type = "text", value }: { label: string; name: string; type?: string; value?: string }) { return <div className="space-y-2"><Label htmlFor={name}>{label}</Label><Input defaultValue={value ?? ""} id={name} name={name} type={type} /></div>; }
+function FilterField({ label, name, type = "text", value }: { label: string; name: string; type?: string; value?: string }) { return <div className="space-y-2.5"><Label htmlFor={name}>{label}</Label><Input defaultValue={value ?? ""} id={name} name={name} type={type} /></div>; }
