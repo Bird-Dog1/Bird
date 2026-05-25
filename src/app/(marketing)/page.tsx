@@ -56,16 +56,19 @@ const dealerBenefits = [
 
 const featuredVehicles = [
   {
+    icon: Car,
     name: "Executive sedan",
     detail: "Premium daily access",
     price: "From dealer terms",
   },
   {
+    icon: Gauge,
     name: "Adventure SUV",
     detail: "Monthly flexibility",
     price: "Subject to approval",
   },
   {
+    icon: ShieldCheck,
     name: "Rideshare-ready vehicle",
     detail: "Program availability varies",
     price: "Dealer-managed",
@@ -174,23 +177,29 @@ export default function LandingPage() {
           description="These visual categories show how participating dealership inventory can be framed. Availability, pricing, and purchase opportunities remain dealer-managed."
         />
         <div className="grid gap-5 md:grid-cols-3">
-          {featuredVehicles.map((vehicle) => (
-            <Card className="overflow-hidden transition hover:-translate-y-1 hover:border-white/20" key={vehicle.name}>
-              <div className="flex aspect-[16/10] items-end border-b border-white/10 bg-white/[0.04] p-5">
-                <div className="h-14 w-14 rounded-full border border-white/10 bg-white/[0.06]" />
-              </div>
-              <CardContent className="space-y-4 p-5">
-                <div>
-                  <h3 className="text-xl font-semibold tracking-[-0.035em] text-white">{vehicle.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{vehicle.detail}</p>
+          {featuredVehicles.map((vehicle) => {
+            const Icon = vehicle.icon;
+
+            return (
+              <Card className="overflow-hidden transition hover:-translate-y-1 hover:border-white/20" key={vehicle.name}>
+                <div className="flex aspect-[16/10] items-center justify-center border-b border-white/10 bg-white/[0.04] p-5">
+                  <div className="grid h-24 w-24 place-items-center rounded-full border border-white/10 bg-white/[0.06] shadow-2xl shadow-black/20">
+                    <Icon className="h-10 w-10 text-primary" />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm">
-                  <span className="text-muted-foreground">Program note</span>
-                  <span className="font-semibold text-primary">{vehicle.price}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent className="space-y-4 p-5">
+                  <div>
+                    <h3 className="text-xl font-semibold tracking-[-0.035em] text-white">{vehicle.name}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{vehicle.detail}</p>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm">
+                    <span className="text-muted-foreground">Program note</span>
+                    <span className="font-semibold text-primary">{vehicle.price}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </section>
 
