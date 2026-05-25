@@ -30,7 +30,7 @@ export function VehicleFilters({
       <FilterField
         label="Search"
         name="q"
-        placeholder="Make, model, year, dealership, VIN, or location"
+        placeholder="Search make, model, VIN, or location"
         value={filters.searchTerm}
       />
       <SelectFilter label="Make" name="make" value={filters.selectedMake}>
