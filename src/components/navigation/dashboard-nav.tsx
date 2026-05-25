@@ -28,20 +28,20 @@ export function DashboardNav({ role }: { role: AppRole }) {
   const visibleLinks = dashboardLinks.filter((link) => link.roles.includes(role));
 
   return (
-    <aside className="rounded-3xl border border-border bg-card/70 p-4">
-      <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+    <aside className="sticky top-24 h-fit rounded-[2rem] border border-white/10 bg-card/80 p-4 shadow-2xl shadow-black/25 backdrop-blur-xl">
+      <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">
         {roleLabels[role]}
       </p>
       <nav className="grid gap-2">
         <Link
-          className="rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="rounded-2xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
           href="/dashboard"
         >
           Overview
         </Link>
         {visibleLinks.map((link) => (
           <Link
-            className="rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="rounded-2xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
             href={link.href}
             key={link.href}
           >

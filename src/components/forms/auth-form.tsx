@@ -22,9 +22,12 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
   const isSignup = mode === "signup";
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardHeader>
-        <CardTitle>{isSignup ? "Create your account" : "Welcome back"}</CardTitle>
+    <Card className="mx-auto w-full max-w-md border-white/15 bg-card/90">
+      <CardHeader className="text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+          Bird Dog access
+        </p>
+        <CardTitle className="text-3xl">{isSignup ? "Create your account" : "Welcome back"}</CardTitle>
         <CardDescription>
           {isSignup
             ? "Start as a customer or dealer using Supabase Auth."
@@ -33,16 +36,16 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         {error ? (
-          <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-foreground">
+          <div className="mb-4 rounded-2xl border border-destructive/35 bg-destructive/10 p-4 text-sm leading-6 text-destructive-foreground">
             {error}
           </div>
         ) : null}
         {message ? (
-          <div className="mb-4 rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-accent">
+          <div className="mb-4 rounded-2xl border border-accent/25 bg-white/[0.05] p-4 text-sm leading-6 text-accent">
             {message}
           </div>
         ) : null}
-        <form action={isSignup ? signUp : signIn} className="space-y-4">
+        <form action={isSignup ? signUp : signIn} className="space-y-5">
           {isSignup ? (
             <>
               <TextField
@@ -79,7 +82,7 @@ export function AuthForm({ mode, error, message, next }: AuthFormProps) {
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {isSignup ? "Already have an account?" : "Need an account?"}{" "}
-          <Link className="font-medium text-primary hover:underline" href={isSignup ? "/login" : "/signup"}>
+          <Link className="font-medium text-primary hover:text-white hover:underline" href={isSignup ? "/login" : "/signup"}>
             {isSignup ? "Sign in" : "Create one"}
           </Link>
         </p>
