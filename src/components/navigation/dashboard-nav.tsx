@@ -11,6 +11,7 @@ const dashboardLinks: Array<{
 }> = [
   { href: "/dashboard/customer", label: "Customer home", roles: ["customer", "admin"] },
   { href: "/dashboard/customer/applications", label: "My applications", roles: ["customer", "admin"] },
+  { href: "/dashboard/customer/rentals" as Route, label: "My rentals", roles: ["customer", "admin"] },
   { href: "/dashboard/dealer", label: "Dealer home", roles: ["dealer", "admin"] },
   { href: "/dashboard/dealer/inventory", label: "Inventory", roles: ["dealer", "admin"] },
   { href: "/dashboard/dealer/applications", label: "Applications", roles: ["dealer", "admin"] },
