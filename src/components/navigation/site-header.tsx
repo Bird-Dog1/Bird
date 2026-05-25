@@ -12,13 +12,13 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ role, email }: SiteHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link className="flex items-center gap-3 font-semibold" href="/">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/75 backdrop-blur-2xl">
+      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link className="flex items-center gap-3 font-semibold tracking-[-0.02em]" href="/">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/15 bg-white text-[0.7rem] font-black tracking-[0.18em] text-background shadow-lg shadow-white/10">
             BD
           </span>
-          <span>Bird Dog</span>
+          <span className="text-base">Bird Dog</span>
         </Link>
         <nav className="flex items-center gap-2 text-sm">
           <Button asChild size="sm" variant="ghost">
@@ -26,7 +26,7 @@ export function SiteHeader({ role, email }: SiteHeaderProps) {
           </Button>
           {role ? (
             <>
-              <Link className="hidden text-muted-foreground sm:block" href="/dashboard">
+              <Link className="hidden text-muted-foreground hover:text-foreground sm:block" href="/dashboard">
                 {roleLabels[role]} dashboard
               </Link>
               <span className="hidden max-w-48 truncate text-muted-foreground md:block">

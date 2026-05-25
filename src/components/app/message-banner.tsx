@@ -12,8 +12,8 @@ export function MessageBanner({ error, message }: MessageBannerProps) {
     <div
       className={
         error
-          ? "rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive-foreground"
-          : "rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-accent"
+          ? "rounded-2xl border border-destructive/35 bg-destructive/10 p-4 text-sm leading-6 text-destructive-foreground shadow-lg shadow-black/20"
+          : "rounded-2xl border border-accent/25 bg-white/[0.05] p-4 text-sm leading-6 text-accent shadow-lg shadow-black/20"
       }
     >
       {error ?? message}

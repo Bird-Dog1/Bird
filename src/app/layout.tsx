@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { SiteFooter } from "@/components/navigation/site-footer";
 import { SiteHeader } from "@/components/navigation/site-header";
 import { getCurrentUserProfile } from "@/lib/auth/guards";
 
@@ -23,12 +24,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className="flex min-h-screen flex-col font-sans antialiased">
         <SiteHeader
           email={session?.profile.email ?? session?.user.email}
           role={session?.profile.role}
         />
-        {children}
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
       </body>
     </html>
   );

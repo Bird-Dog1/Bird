@@ -14,7 +14,7 @@ type VehicleFormProps = {
 
 export function VehicleForm({ action, dealerships, vehicle }: VehicleFormProps) {
   return (
-    <form action={action} className="grid gap-5">
+    <form action={action} className="grid gap-6">
       {vehicle ? <input name="vehicle_id" type="hidden" value={vehicle.id} /> : null}
       {!vehicle ? (
         <SelectField label="Dealership" name="dealership_id" required>
@@ -49,10 +49,10 @@ export function VehicleForm({ action, dealerships, vehicle }: VehicleFormProps) 
         <CheckboxField defaultChecked={vehicle?.insurance_required ?? true} label="Insurance required" name="insurance_required" />
       </div>
       <TextareaField defaultValue={vehicle?.description ?? ""} label="Rental terms and description" name="description" rows={5} />
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <Label htmlFor="photos">Vehicle photos</Label>
-        <input accept="image/jpeg,image/png,image/webp" className="flex min-h-11 w-full rounded-xl border border-input bg-background/60 px-3 py-2 text-sm text-foreground file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-foreground" id="photos" multiple name="photos" type="file" />
-        <p className="text-xs text-muted-foreground">Uploads are stored in the private vehicle-photos bucket.</p>
+        <input accept="image/jpeg,image/png,image/webp" className="flex min-h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground shadow-inner shadow-black/20 file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-1.5 file:text-sm file:font-semibold file:text-primary-foreground hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50" id="photos" multiple name="photos" type="file" />
+        <p className="text-xs leading-5 text-muted-foreground">Uploads are stored in the private vehicle-photos bucket.</p>
       </div>
       <SubmitButton pendingLabel="Saving vehicle...">{vehicle ? "Save vehicle" : "Add vehicle"}</SubmitButton>
     </form>
@@ -61,8 +61,8 @@ export function VehicleForm({ action, dealerships, vehicle }: VehicleFormProps) 
 
 function CheckboxField({ defaultChecked, label, name }: { defaultChecked: boolean; label: string; name: string }) {
   return (
-    <label className="flex items-center gap-3 rounded-2xl border border-border bg-background/40 p-4 text-sm">
-      <input defaultChecked={defaultChecked} name={name} type="checkbox" />
+    <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-muted-foreground hover:border-white/20 hover:text-foreground">
+      <input className="h-4 w-4 accent-primary" defaultChecked={defaultChecked} name={name} type="checkbox" />
       <span>{label}</span>
     </label>
   );
