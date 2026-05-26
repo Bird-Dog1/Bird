@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { DashboardHero, InfoTile } from "@/components/app/dashboard-ui";
 import { EmptyState } from "@/components/app/empty-state";
 import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Applications" };
 export default async function DealerApplicationsPage() {
-  const { user, profile } = await requireRole(["dealer", "admin"]);
+  const { user, profile } = await requireRole(["dealer", "admin"], "/dashboard/dealer/applications");
   const supabase = await createServerSupabaseClient();
   const { data: dealerships, error: dealershipError } = await listAccessibleDealerships(supabase, user.id, profile.role);
   const ids = dealerships.map((d) => d.id);
@@ -24,16 +25,24 @@ export default async function DealerApplicationsPage() {
   const apps = (data ?? []) as ApplicationWithRelations[];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">Dealer review</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">Applications inbox</h1>
-        <p className="mt-2 text-muted-foreground">Review customer applications for your dealership only.</p>
-      </div>
+    <div className="space-y-7">
+      <DashboardHero
+        eyebrow="Dealer review"
+        title="Applications inbox built for decisions."
+        description="Review customer details, selected vehicles, optional documents, preferred start dates, and approval status for your dealership only."
+        actions={<Button asChild variant="outline"><Link href="/dashboard/dealer/inventory">Manage inventory</Link></Button>}
+      >
+        <div className="grid gap-3 sm:grid-cols-4">
+          <InfoTile label="Total" value={apps.length} />
+          <InfoTile label="Pending" value={apps.filter((app) => app.status === "submitted").length} />
+          <InfoTile label="Under review" value={apps.filter((app) => app.status === "under_review").length} />
+          <InfoTile label="Approved" value={apps.filter((app) => app.status === "approved").length} />
+        </div>
+      </DashboardHero>
       {error ? (
         <EmptyState title="Applications could not load" description={error.message} />
       ) : apps.length === 0 ? (
-        <EmptyState description="Customer applications will appear here after public marketplace submissions." title="No applications yet" />
+        <EmptyState action={<Button asChild><Link href="/dashboard/dealer/inventory">Review inventory</Link></Button>} description="Customer applications will appear here after public marketplace submissions. Keep available vehicles published so customers can apply." title="No applications yet" />
       ) : (
         <div className="grid gap-4">
           {apps.map((application) => {
@@ -48,11 +57,12 @@ export default async function DealerApplicationsPage() {
                   </div>
                   <StatusBadge value={application.status} />
                 </CardHeader>
-                <CardContent className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <p className="text-sm text-muted-foreground">
-                    {formatCurrency(application.vehicles?.monthly_price)}/mo · {application.application_documents.length} optional documents
-                    {preferredStartDate ? ` · Start ${preferredStartDate}` : ""}
-                  </p>
+                <CardContent className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <InfoTile label="Monthly" value={`${formatCurrency(application.vehicles?.monthly_price)}/mo`} />
+                    <InfoTile label="Documents" value={`${application.application_documents.length} optional`} />
+                    <InfoTile label="Preferred start" value={preferredStartDate ?? "Not provided"} />
+                  </div>
                   <Button asChild variant="outline"><Link href={`/dashboard/dealer/applications/${application.id}` as Route}>Review</Link></Button>
                 </CardContent>
               </Card>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { startRentalCheckout } from "@/app/dashboard/customer/rentals/actions";
+import { DashboardHero, InfoTile, MetricCard } from "@/components/app/dashboard-ui";
 import { EmptyState } from "@/components/app/empty-state";
 import { MessageBanner } from "@/components/app/message-banner";
 import { StatusBadge } from "@/components/app/status-badge";
@@ -29,14 +30,24 @@ export default async function CustomerRentalsPage({ searchParams }: { searchPara
     .order("created_at", { ascending: false });
   const rentals = (data ?? []) as RentalWithRelations[];
   const tracking = await getRentalPaymentTracking(supabase, rentals.map((rental) => rental.id));
+  const summaries = Array.from(tracking.summaries.values());
+  const totalEligibleCredit = summaries.reduce((sum, summary) => sum + summary.eligiblePurchaseCredit, 0);
+  const overdueCount = summaries.reduce((sum, summary) => sum + summary.overdueCount, 0);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">Customer rentals</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">My rentals and payments</h1>
-        <p className="mt-2 text-muted-foreground">Track active rentals, payment history, and eligible purchase credit subject to dealership terms.</p>
-      </div>
+    <div className="space-y-7">
+      <DashboardHero
+        eyebrow="Customer rentals"
+        title="Rent, pay, and track with confidence."
+        description="See active rentals, next due dates, payment history, and eligible purchase credit for a dealer-managed purchase option subject to dealership terms."
+        actions={<Button asChild variant="outline"><Link href="/vehicles">Browse more vehicles</Link></Button>}
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
+          <MetricCard label="Active rentals" value={rentals.length} detail="Converted from approved applications." />
+          <MetricCard label="Overdue payments" value={tracking.configured ? overdueCount : "Setup required"} detail="Based on payment records." />
+          <MetricCard label="Eligible purchase credit" value={tracking.configured ? formatCurrency(totalEligibleCredit) : "Setup required"} detail="Subject to dealership terms." />
+        </div>
+      </DashboardHero>
       <MessageBanner error={params.error ?? (!tracking.configured ? tracking.setupMessage : undefined)} message={params.message} />
       {!checkoutSetup.checkoutEnabled ? (
         <Card className="border-primary/20 bg-primary/5">
@@ -67,10 +78,10 @@ export default async function CustomerRentalsPage({ searchParams }: { searchPara
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="grid gap-4 md:grid-cols-4">
-                    <Info label="Monthly rental payment" value={formatCurrency(nextPayment?.amount ?? rental.monthly_rate)} />
-                    <Info label="Next payment due" value={formatDate(nextPayment?.due_date)} />
-                    <Info label="Last payment date" value={formatDate(latestPaidDate(summary?.paymentHistory ?? []))} />
-                    <Info label="Eligible purchase credit" value={`${formatCurrency(summary?.eligiblePurchaseCredit ?? 0)} subject to dealership terms`} />
+                    <InfoTile label="Monthly rental payment" value={formatCurrency(nextPayment?.amount ?? rental.monthly_rate)} />
+                    <InfoTile label="Next payment due" value={formatDate(nextPayment?.due_date)} />
+                    <InfoTile label="Last payment date" value={formatDate(latestPaidDate(summary?.paymentHistory ?? []))} />
+                    <InfoTile label="Eligible purchase credit" value={formatCurrency(summary?.eligiblePurchaseCredit ?? 0)} detail="Subject to dealership terms." />
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-muted-foreground">
                     Eligible purchase credit is tracked only when dealership terms allow it and may apply to a dealer-managed purchase option. Bird Dog does not promise ownership or hold rental funds.
@@ -108,10 +119,6 @@ export default async function CustomerRentalsPage({ searchParams }: { searchPara
       )}
     </div>
   );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-semibold">{value}</p></div>;
 }
 
 function latestPaidDate(payments: Array<{ payment_date: string | null; status: string }>) {
