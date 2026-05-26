@@ -10,7 +10,7 @@ import { getPaymentSetupStatus } from "@/lib/payments/config";
 export const metadata = { title: "Payment success" };
 
 export default async function PaymentSuccessPage() {
-  await requireRole(["customer", "admin"], "/dashboard/customer/payments/success");
+  await requireRole(["customer"], "/dashboard/customer/payments/success");
   const setup = getPaymentSetupStatus();
 
   return (

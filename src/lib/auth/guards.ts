@@ -1,7 +1,7 @@
 import { type Route } from "next";
 import { redirect } from "next/navigation";
 
-import { roleHome } from "@/lib/auth/roles";
+import { canAccessRole, getEffectiveRole, roleHome } from "@/lib/auth/roles";
 import { isMissingSupabaseEnvError } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type AppRole, type Profile } from "@/types/app";
@@ -53,10 +53,11 @@ export async function requireUserProfile(nextPath = "/dashboard") {
 
 export async function requireRole(roles: AppRole[], nextPath = "/dashboard") {
   const session = await requireUserProfile(nextPath);
+  const effectiveRole = getEffectiveRole(session.user, session.profile);
 
-  if (!roles.includes(session.profile.role)) {
-    redirect(roleHome[session.profile.role]);
+  if (!roles.some((role) => canAccessRole(role, session.user, session.profile))) {
+    redirect(roleHome[effectiveRole]);
   }
 
-  return session;
+  return { ...session, role: effectiveRole };
 }

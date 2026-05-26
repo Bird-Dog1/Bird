@@ -14,6 +14,7 @@ import {
   getInventoryLocationOptions,
   getInventoryMakeOptions,
   hasActiveInventoryFilters,
+  logInventoryDebug,
 } from "@/lib/bird-dog/inventory";
 import type { DealerVehicle } from "@/lib/bird-dog/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -27,12 +28,11 @@ export default async function DealerInventoryPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
-  const { user, profile } = await requireRole(["dealer", "admin"], "/dashboard/dealer/inventory");
+  const { user, profile } = await requireRole(["dealer"], "/dashboard/dealer/inventory");
   const supabase = await createServerSupabaseClient();
   const { data: dealerships, error: dealershipError } = await listAccessibleDealerships(
     supabase,
     user.id,
-    profile.role,
   );
   const ids = dealerships.map((d) => d.id);
 
@@ -60,6 +60,7 @@ export default async function DealerInventoryPage({
     .select("*, vehicle_photos (id, vehicle_id, photo_url, sort_order, created_at, updated_at)")
     .in("dealership_id", ids)
     .order("created_at", { ascending: false });
+  logInventoryDebug("dealer-inventory", { count: data?.length ?? 0, error, role: profile.role });
   const vehicles = await Promise.all(
     ((data ?? []) as DealerVehicle[]).map(async (vehicle) => ({
       ...vehicle,

@@ -13,7 +13,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "My applications" };
 export default async function CustomerApplicationsPage() {
-  const { user } = await requireRole(["customer", "admin"], "/dashboard/customer/applications"); const supabase = await createServerSupabaseClient();
+  const { user } = await requireRole(["customer"], "/dashboard/customer/applications"); const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.from("rental_applications").select(APPLICATION_SELECT).eq("customer_id", user.id).order("created_at", { ascending: false });
   const applications = (data ?? []) as ApplicationWithRelations[];
   const pendingCount = applications.filter((application) => application.status === "submitted" || application.status === "under_review").length;

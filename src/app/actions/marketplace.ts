@@ -35,7 +35,7 @@ function storageFileName(file: File) {
 }
 
 export async function submitRentalApplication(formData: FormData) {
-  const { user } = await requireRole(["customer", "admin"]);
+  const { user } = await requireRole(["customer"]);
   const supabase = await createServerSupabaseClient();
   const vehicleId = formString(formData, "vehicle_id");
   const fullName = formString(formData, "full_name");

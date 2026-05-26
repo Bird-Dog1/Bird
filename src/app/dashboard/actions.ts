@@ -7,7 +7,7 @@ import { requireRole } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function createCustomerApplication(formData: FormData) {
-  const { user } = await requireRole(["customer", "admin"]);
+  const { user } = await requireRole(["customer"]);
   const supabase = await createServerSupabaseClient();
 
   const vehicleId = String(formData.get("vehicle_id") ?? "");
@@ -28,7 +28,7 @@ export async function createCustomerApplication(formData: FormData) {
 }
 
 export async function createDealerVehicle(formData: FormData) {
-  const { user } = await requireRole(["dealer", "admin"]);
+  const { user } = await requireRole(["dealer"]);
   const supabase = await createServerSupabaseClient();
 
   const monthlyPrice = Number(formData.get("monthly_price"));

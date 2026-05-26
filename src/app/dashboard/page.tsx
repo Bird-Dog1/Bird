@@ -8,11 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { roleHome, roleLabels } from "@/lib/auth/roles";
+import { getEffectiveRole, roleHome, roleLabels } from "@/lib/auth/roles";
 import { requireUserProfile } from "@/lib/auth/guards";
 
 export default async function DashboardPage() {
-  const { profile } = await requireUserProfile();
+  const { user, profile } = await requireUserProfile();
+  const role = getEffectiveRole(user, profile);
 
   return (
     <div className="space-y-6">
@@ -23,7 +24,7 @@ export default async function DashboardPage() {
           </p>
           <CardTitle className="text-3xl">Dashboard</CardTitle>
           <CardDescription>
-            Role-aware workspace for {roleLabels[profile.role].toLowerCase()} accounts.
+            Role-aware workspace for {roleLabels[role].toLowerCase()} accounts.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-muted-foreground">{profile.email}</p>
           </div>
           <Button asChild>
-            <Link href={roleHome[profile.role]}>Open workspace</Link>
+            <Link href={roleHome[role]}>Open workspace</Link>
           </Button>
         </CardContent>
       </Card>

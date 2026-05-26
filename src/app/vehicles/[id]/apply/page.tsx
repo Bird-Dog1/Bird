@@ -17,7 +17,7 @@ export const metadata = { title: "Apply" };
 export default async function ApplyPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> }) {
   const { id } = await params;
   const query = await searchParams;
-  const { profile } = await requireRole(["customer", "admin"], `/vehicles/${id}/apply`);
+  const { profile } = await requireRole(["customer"], `/vehicles/${id}/apply`);
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.from("vehicles").select(PUBLIC_VEHICLE_SELECT).eq("id", id).eq("status", "available").eq("dealerships.approved", true).eq("dealerships.suspended", false).maybeSingle();
   if (error || !data) return <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8"><Card><CardHeader><CardTitle>Vehicle unavailable</CardTitle></CardHeader><CardContent className="space-y-4"><p className="text-muted-foreground">{error?.message ?? "This vehicle is no longer available."}</p><Button asChild><Link href="/vehicles">Browse vehicles</Link></Button></CardContent></Card></main>;

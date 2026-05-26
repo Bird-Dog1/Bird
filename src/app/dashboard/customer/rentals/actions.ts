@@ -11,7 +11,7 @@ function formString(formData: FormData, name: string) {
 }
 
 export async function startRentalCheckout(formData: FormData) {
-  await requireRole(["customer", "admin"]);
+  await requireRole(["customer"]);
   const rentalId = formString(formData, "rental_id");
   const redirectPath = "/dashboard/customer/rentals";
   const setup = getPaymentSetupStatus();

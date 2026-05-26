@@ -1,6 +1,7 @@
 import { formatCurrency } from "@/lib/bird-dog/format";
 import type { Dealership, VehiclePhoto } from "@/lib/bird-dog/types";
 import type { Enums } from "@/lib/supabase/database.types";
+import type { AppRole } from "@/types/app";
 
 export type InventoryVehicle = {
   id: string;
@@ -149,6 +150,23 @@ export function getVehicleStatus(vehicle: InventoryVehicle) {
 
 export function formatInventoryStatus(status: string) {
   return status.replaceAll("_", " ");
+}
+
+export function logInventoryDebug(
+  scope: string,
+  details: {
+    count: number;
+    role: AppRole | "public";
+    error?: { message?: string } | null;
+  },
+) {
+  if (process.env.NODE_ENV !== "development") return;
+
+  console.info(`[inventory:${scope}]`, {
+    count: details.count,
+    error: details.error?.message ?? null,
+    role: details.role,
+  });
 }
 
 function matchesSearch(vehicle: InventoryVehicle, searchTerm: string) {

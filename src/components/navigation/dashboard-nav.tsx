@@ -12,14 +12,14 @@ const dashboardLinks: Array<{
   label: string;
   roles: AppRole[];
 }> = [
-  { href: "/dashboard/customer", label: "Customer home", roles: ["customer", "admin"] },
-  { href: "/dashboard/customer/applications", label: "My applications", roles: ["customer", "admin"] },
-  { href: "/dashboard/customer/rentals" as Route, label: "My rentals", roles: ["customer", "admin"] },
-  { href: "/dashboard/dealer", label: "Dealer home", roles: ["dealer", "admin"] },
-  { href: "/dashboard/dealer/inventory", label: "Inventory", roles: ["dealer", "admin"] },
-  { href: "/dashboard/dealer/applications", label: "Applications", roles: ["dealer", "admin"] },
-  { href: "/dashboard/dealer/rentals", label: "Active rentals", roles: ["dealer", "admin"] },
-  { href: "/dashboard/dealer/settings", label: "Dealership settings", roles: ["dealer", "admin"] },
+  { href: "/dashboard/customer", label: "Customer home", roles: ["customer"] },
+  { href: "/dashboard/customer/applications", label: "My applications", roles: ["customer"] },
+  { href: "/dashboard/customer/rentals" as Route, label: "My rentals", roles: ["customer"] },
+  { href: "/dashboard/dealer", label: "Dealer home", roles: ["dealer"] },
+  { href: "/dashboard/dealer/inventory", label: "Inventory", roles: ["dealer"] },
+  { href: "/dashboard/dealer/applications", label: "Applications", roles: ["dealer"] },
+  { href: "/dashboard/dealer/rentals", label: "Active rentals", roles: ["dealer"] },
+  { href: "/dashboard/dealer/settings", label: "Dealership settings", roles: ["dealer"] },
   { href: "/dashboard/admin", label: "Admin home", roles: ["admin"] },
   { href: "/dashboard/admin/dealerships", label: "Dealership approvals", roles: ["admin"] },
   { href: "/dashboard/admin/users", label: "Users", roles: ["admin"] },

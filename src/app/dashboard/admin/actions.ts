@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/guards";
+import { isPlatformAdminEmail } from "@/lib/auth/roles";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/types/app";
 
@@ -50,6 +51,15 @@ export async function updateUserRole(formData: FormData) {
   const userId = formString(formData, "user_id");
   const role = formString(formData, "role") as AppRole;
   if (!roles.includes(role)) redirect("/dashboard/admin/users?error=Invalid%20role." as Route);
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", userId)
+    .single();
+  if (profileError || !profile) redirect("/dashboard/admin/users?error=User%20not%20found." as Route);
+  if (role === "admin" && !isPlatformAdminEmail(profile.email)) {
+    redirect("/dashboard/admin/users?error=Only%20the%20platform%20owner%20can%20be%20admin." as Route);
+  }
   const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
   if (error) redirect(`/dashboard/admin/users?error=${encodeURIComponent(error.message)}` as Route);
   revalidatePath("/dashboard/admin/users");
@@ -61,6 +71,9 @@ export async function assignDealerUser(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   const dealershipId = formString(formData, "dealership_id");
   const email = formString(formData, "email").toLowerCase();
+  if (isPlatformAdminEmail(email)) {
+    redirect(`/dashboard/admin/dealerships/${dealershipId}?error=${encodeURIComponent("Admin cannot be assigned as a dealer.")}` as Route);
+  }
   const { data: profile, error: profileError } = await supabase.from("profiles").select("id").eq("email", email).single();
   if (profileError || !profile) redirect(`/dashboard/admin/dealerships/${dealershipId}?error=${encodeURIComponent("User not found.")}` as Route);
   const { error: roleError } = await supabase.from("profiles").update({ role: "dealer" }).eq("id", profile.id);

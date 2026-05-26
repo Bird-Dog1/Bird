@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/guards";
 import { fetchAdminDashboardData, includesSearch } from "@/lib/admin/data";
 import { formatCurrency, vehicleTitle } from "@/lib/bird-dog/format";
+import { logInventoryDebug } from "@/lib/bird-dog/inventory";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "All vehicles" };
@@ -24,6 +25,7 @@ export default async function AdminVehiclesPage({
   await requireRole(["admin"]);
   const supabase = await createServerSupabaseClient();
   const data = await fetchAdminDashboardData(supabase);
+  logInventoryDebug("admin-inventory", { count: data.vehicles.length, role: "admin" });
   const query = params.q?.trim() ?? "";
   const vehicles = query
     ? data.vehicles.filter(

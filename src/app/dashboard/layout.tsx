@@ -1,6 +1,7 @@
 import { AdminLayout } from "@/components/admin/admin-shell";
 import { DashboardNav } from "@/components/navigation/dashboard-nav";
 import { getCurrentUserProfile } from "@/lib/auth/guards";
+import { getEffectiveRole } from "@/lib/auth/roles";
 
 export const metadata = {
   title: "Dashboard",
@@ -17,13 +18,15 @@ export default async function DashboardLayout({
     return <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>;
   }
 
-  if (session.profile.role === "admin") {
+  const role = getEffectiveRole(session.user, session.profile);
+
+  if (role === "admin") {
     return <AdminLayout profile={session.profile}>{children}</AdminLayout>;
   }
 
   return (
     <main className="mx-auto grid max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[18rem_1fr] lg:px-8">
-      <DashboardNav role={session.profile.role} />
+      <DashboardNav role={role} />
       <section className="min-w-0">{children}</section>
     </main>
   );
