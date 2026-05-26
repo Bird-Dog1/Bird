@@ -33,7 +33,6 @@ export default async function DealerInventoryPage({
   const { data: dealerships, error: dealershipError } = await listAccessibleDealerships(
     supabase,
     user.id,
-    profile.role,
   );
   const ids = dealerships.map((d) => d.id);
 

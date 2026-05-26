@@ -6,7 +6,6 @@ import type { Database } from "@/lib/supabase/database.types";
 export async function listAccessibleDealerships(
   supabase: SupabaseClient<Database>,
   userId: string,
-  _role?: unknown,
 ) {
   const { data, error } = await supabase
     .from("dealer_users")
