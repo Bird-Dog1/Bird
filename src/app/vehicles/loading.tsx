@@ -1,1 +1,10 @@
-export default function VehiclesLoading() { return <main className="mx-auto max-w-7xl space-y-6 px-4 py-12 sm:px-6 lg:px-8"><div className="h-44 animate-pulse rounded-[2rem] border border-white/10 bg-white/[0.06]" /><div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map((item) => <div className="h-80 animate-pulse rounded-[2rem] border border-white/10 bg-white/[0.06]" key={item} />)}</div></main>; }
+import { InventoryLoadingState } from "@/components/marketplace/inventory-loading-state";
+
+export default function VehiclesLoading() {
+  return (
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="h-44 animate-pulse rounded-[2rem] border border-white/10 bg-white/[0.06]" />
+      <InventoryLoadingState />
+    </main>
+  );
+}

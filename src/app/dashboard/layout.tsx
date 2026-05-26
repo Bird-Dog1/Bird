@@ -1,3 +1,4 @@
+import { AdminLayout } from "@/components/admin/admin-shell";
 import { DashboardNav } from "@/components/navigation/dashboard-nav";
 import { getCurrentUserProfile } from "@/lib/auth/guards";
 
@@ -14,6 +15,10 @@ export default async function DashboardLayout({
 
   if (!session) {
     return <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>;
+  }
+
+  if (session.profile.role === "admin") {
+    return <AdminLayout profile={session.profile}>{children}</AdminLayout>;
   }
 
   return (

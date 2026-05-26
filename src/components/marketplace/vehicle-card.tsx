@@ -5,19 +5,43 @@ import type { Route } from "next";
 import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/bird-dog/format";
-import type { PublicVehicle } from "@/lib/bird-dog/types";
+import {
+  getVehicleDealership,
+  getVehicleImageUrl,
+  getVehicleLocation,
+  getVehicleMileage,
+  getVehicleMonthlyPrice,
+  getVehicleStatus,
+  getVehicleTitle,
+  type InventoryVehicle,
+} from "@/lib/bird-dog/inventory";
 
-export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
-  const photo = vehicle.vehicle_photos?.[0]?.signed_url;
-  const title = formatVehicleTitle(vehicle);
-  const location = formatLocation(vehicle);
-  const dealership = vehicle.dealerships?.name?.trim() || "Participating dealership";
-  const mileage = vehicle.mileage_limit ? `${vehicle.mileage_limit.toLocaleString()}/mo` : "Ask dealer";
+export type VehicleCardProps = {
+  vehicle: InventoryVehicle;
+  detailsHref?: Route;
+  detailsLabel?: string;
+  applyHref?: Route;
+  applyLabel?: string;
+};
+
+export function VehicleCard({
+  vehicle,
+  detailsHref = `/vehicles/${vehicle.id}` as Route,
+  detailsLabel = "View Details",
+  applyHref = `/vehicles/${vehicle.id}/apply` as Route,
+  applyLabel = "Apply",
+}: VehicleCardProps) {
+  const photo = getVehicleImageUrl(vehicle);
+  const title = getVehicleTitle(vehicle);
+  const location = getVehicleLocation(vehicle);
+  const dealership = getVehicleDealership(vehicle);
+  const mileage = getVehicleMileage(vehicle);
+  const monthlyPrice = getVehicleMonthlyPrice(vehicle);
+  const status = getVehicleStatus(vehicle);
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-black/50">
-      <Link href={`/vehicles/${vehicle.id}` as Route}>
+      <Link href={detailsHref}>
         <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
           {photo ? (
             <Image
@@ -44,13 +68,13 @@ export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
                 {dealership} · {location}
               </p>
             </div>
-            <StatusBadge value={vehicle.status ?? "available"} />
+            <StatusBadge value={status} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
             <p className="text-muted-foreground">Monthly</p>
-            <p className="mt-1 font-semibold text-primary">{formatCurrency(vehicle.monthly_price)}</p>
+            <p className="mt-1 font-semibold text-primary">{monthlyPrice}</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
             <p className="text-muted-foreground">Mileage</p>
@@ -62,30 +86,13 @@ export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
         </p>
         <div className="mt-auto grid gap-3 sm:grid-cols-2">
           <Button asChild variant="outline">
-            <Link href={`/vehicles/${vehicle.id}` as Route}>View Details</Link>
+            <Link href={detailsHref}>{detailsLabel}</Link>
           </Button>
           <Button asChild>
-            <Link href={`/vehicles/${vehicle.id}/apply` as Route}>Apply</Link>
+            <Link href={applyHref}>{applyLabel}</Link>
           </Button>
         </div>
       </CardContent>
     </Card>
   );
-}
-
-function formatVehicleTitle(vehicle: PublicVehicle) {
-  const title = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim]
-    .filter(Boolean)
-    .join(" ");
-
-  return title || "Vehicle details available soon";
-}
-
-function formatLocation(vehicle: PublicVehicle) {
-  const location = [vehicle.city, vehicle.state].filter(Boolean).join(", ");
-  const dealershipLocation = [vehicle.dealerships?.city, vehicle.dealerships?.state]
-    .filter(Boolean)
-    .join(", ");
-
-  return location || dealershipLocation || "Location available soon";
 }
