@@ -37,6 +37,12 @@ and `supabase/migrations/20260520073800_create_bird_dog_storage.sql` to create:
 - private `vehicle-photos` and `application-documents` storage buckets
 - auth profile creation, triggers, indexes, and RLS policies
 
+Payment tracking requires a separate operational review before activation. Start
+from `supabase/migration_suggestions/20260525232600_rental_payment_tracking_suggestion.sql`
+only after Stripe Checkout is wired to route rental funds to participating
+dealerships or dealership-connected accounts. Bird Dog should not hold rental
+funds unless legally set up to do so.
+
 Admin roles should be assigned from the Supabase dashboard or a service-role
 script, not from public signup.
 

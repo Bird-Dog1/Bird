@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { type Route } from "next";
+import { usePathname } from "next/navigation";
 
 import { roleLabels } from "@/lib/auth/roles";
 import { type AppRole } from "@/types/app";
@@ -11,6 +14,7 @@ const dashboardLinks: Array<{
 }> = [
   { href: "/dashboard/customer", label: "Customer home", roles: ["customer", "admin"] },
   { href: "/dashboard/customer/applications", label: "My applications", roles: ["customer", "admin"] },
+  { href: "/dashboard/customer/rentals" as Route, label: "My rentals", roles: ["customer", "admin"] },
   { href: "/dashboard/dealer", label: "Dealer home", roles: ["dealer", "admin"] },
   { href: "/dashboard/dealer/inventory", label: "Inventory", roles: ["dealer", "admin"] },
   { href: "/dashboard/dealer/applications", label: "Applications", roles: ["dealer", "admin"] },
@@ -25,6 +29,7 @@ const dashboardLinks: Array<{
 ];
 
 export function DashboardNav({ role }: { role: AppRole }) {
+  const pathname = usePathname();
   const visibleLinks = dashboardLinks.filter((link) => link.roles.includes(role));
 
   return (
@@ -32,23 +37,23 @@ export function DashboardNav({ role }: { role: AppRole }) {
       <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">
         {roleLabels[role]}
       </p>
-      <nav className="grid gap-2">
-        <Link
-          className="rounded-2xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
-          href="/dashboard"
-        >
-          Overview
-        </Link>
+      <nav className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">
+        <NavLink href="/dashboard" active={pathname === "/dashboard"} label="Overview" />
         {visibleLinks.map((link) => (
-          <Link
-            className="rounded-2xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
-            href={link.href}
-            key={link.href}
-          >
-            {link.label}
-          </Link>
+          <NavLink active={pathname === link.href || pathname.startsWith(`${link.href}/`)} href={link.href} key={link.href} label={link.label} />
         ))}
       </nav>
     </aside>
+  );
+}
+
+function NavLink({ href, label, active }: { href: Route; label: string; active: boolean }) {
+  return (
+    <Link
+      className={`shrink-0 rounded-2xl px-3 py-2.5 text-sm transition ${active ? "bg-white/[0.09] text-foreground shadow-inner shadow-black/20" : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"}`}
+      href={href}
+    >
+      {label}
+    </Link>
   );
 }

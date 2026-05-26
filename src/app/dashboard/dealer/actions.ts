@@ -9,6 +9,7 @@ import type { Enums } from "@/lib/supabase/database.types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const vehicleStatuses = ["available", "pending", "rented", "unavailable"] as const;
+const applicationStatuses = ["submitted", "under_review", "approved", "denied", "cancelled"] as const;
 
 function formString(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -131,8 +132,14 @@ export async function updateApplicationStatus(formData: FormData) {
   await requireRole(["dealer", "admin"]);
   const supabase = await createServerSupabaseClient();
   const applicationId = formString(formData, "application_id");
-  const status = formString(formData, "status") as Enums<"application_status">;
+  const submittedStatus = formString(formData, "status");
+  const status = applicationStatuses.includes(submittedStatus as Enums<"application_status">)
+    ? (submittedStatus as Enums<"application_status">)
+    : null;
   const dealerNotes = formString(formData, "dealer_notes") || null;
+  if (!applicationId || !status) {
+    redirect(`/dashboard/dealer/applications/${applicationId}?error=${encodeURIComponent("Choose a valid application status.")}` as Route);
+  }
   const { error } = await supabase.from("rental_applications").update({ dealer_notes: dealerNotes, status }).eq("id", applicationId);
   if (error) redirect(`/dashboard/dealer/applications/${applicationId}?error=${encodeURIComponent(error.message)}` as Route);
   revalidatePath("/dashboard/dealer/applications");

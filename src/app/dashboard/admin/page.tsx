@@ -47,7 +47,7 @@ export default async function AdminDashboardPage() {
         title="Bird Dog Admin"
       >
         <Button asChild variant="outline">
-          <Link href="/dashboard/admin/issues">Review flags</Link>
+          <Link href={"/dashboard/admin/issues" as Route}>Review flags</Link>
         </Button>
       </AdminPageHeader>
 
