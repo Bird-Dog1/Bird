@@ -16,7 +16,7 @@ export const metadata = { title: "Application detail" };
 export default async function DealerApplicationDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; message?: string }> }) {
   const { id } = await params;
   const query = await searchParams;
-  await requireRole(["dealer", "admin"], `/dashboard/dealer/applications/${id}`);
+  await requireRole(["dealer"], `/dashboard/dealer/applications/${id}`);
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.from("rental_applications").select("*, vehicles (id, vin, year, make, model, trim, monthly_price, deposit, city, state), dealerships (id, name, phone), profiles (id, email, full_name, phone), application_documents (id, application_id, document_type, file_url, created_at)").eq("id", id).maybeSingle();
 

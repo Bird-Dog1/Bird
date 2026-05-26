@@ -17,6 +17,7 @@ import { InventoryLoadingState } from "@/components/marketplace/inventory-loadin
 import { VehicleGrid } from "@/components/marketplace/vehicle-grid";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { logInventoryDebug } from "@/lib/bird-dog/inventory";
 import type { PublicVehicle } from "@/lib/bird-dog/types";
 import { PUBLIC_VEHICLE_SELECT } from "@/lib/supabase/queries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -205,8 +206,12 @@ async function FeaturedVehicles() {
   const { data, error } = await supabase
     .from("vehicles")
     .select(PUBLIC_VEHICLE_SELECT)
+    .eq("status", "available")
+    .eq("dealerships.approved", true)
+    .eq("dealerships.suspended", false)
     .order("created_at", { ascending: false })
     .limit(3);
+  logInventoryDebug("featured", { count: data?.length ?? 0, error, role: "public" });
 
   if (error) {
     return (

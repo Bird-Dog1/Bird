@@ -12,7 +12,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Dealer workspace" };
 export default async function DealerDashboardPage() {
-  const { user, profile } = await requireRole(["dealer", "admin"], "/dashboard/dealer"); const supabase = await createServerSupabaseClient();
+  const { user, profile } = await requireRole(["dealer"], "/dashboard/dealer"); const supabase = await createServerSupabaseClient();
   const { data: dealerships, error: dealershipError } = await listAccessibleDealerships(supabase, user.id, profile.role); const ids = dealerships.map((d) => d.id);
   const [vehicleCount, applicationCount, rentalCount, activeRentals] = ids.length ? await Promise.all([supabase.from("vehicles").select("id", { count: "exact", head: true }).in("dealership_id", ids), supabase.from("rental_applications").select("id", { count: "exact", head: true }).in("dealership_id", ids), supabase.from("rentals").select("id", { count: "exact", head: true }).in("dealership_id", ids).eq("active", true), supabase.from("rentals").select("id").in("dealership_id", ids).eq("active", true)]) : [{ count: 0 }, { count: 0 }, { count: 0 }, { data: [] }];
   const rentalIds = (activeRentals.data ?? []).map((rental) => rental.id);

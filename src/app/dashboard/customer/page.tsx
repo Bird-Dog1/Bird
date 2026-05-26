@@ -15,7 +15,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export const metadata = { title: "Customer workspace" };
 
 export default async function CustomerDashboardPage() {
-  const { user } = await requireRole(["customer", "admin"], "/dashboard/customer");
+  const { user } = await requireRole(["customer"], "/dashboard/customer");
   const supabase = await createServerSupabaseClient();
   const [{ data: applications, error }, { data: rentalRows, error: rentalError }] = await Promise.all([
     supabase.from("rental_applications").select("id, status, created_at").eq("customer_id", user.id).order("created_at", { ascending: false }).limit(3),

@@ -7,7 +7,10 @@ import {
   getInventoryLocationOptions,
   getInventoryMakeOptions,
   hasActiveInventoryFilters,
+  logInventoryDebug,
 } from "@/lib/bird-dog/inventory";
+import { getCurrentUserProfile } from "@/lib/auth/guards";
+import { getEffectiveRole } from "@/lib/auth/roles";
 import type { PublicVehicle } from "@/lib/bird-dog/types";
 import { PUBLIC_VEHICLE_SELECT } from "@/lib/supabase/queries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -18,12 +21,18 @@ export const metadata = { title: "Browse vehicles" };
 
 export default async function VehiclesPage({ searchParams }: VehiclesPageProps) {
   const params = await searchParams;
+  const session = await getCurrentUserProfile();
+  const role = session ? getEffectiveRole(session.user, session.profile) : "public";
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("vehicles")
     .select(PUBLIC_VEHICLE_SELECT)
+    .eq("status", "available")
+    .eq("dealerships.approved", true)
+    .eq("dealerships.suspended", false)
     .order("created_at", { ascending: false });
+  logInventoryDebug("public-browse", { count: data?.length ?? 0, error, role });
 
   const vehicles = error ? [] : await signPublicVehicles(supabase, (data ?? []) as PublicVehicle[]);
   const filterState = getInventoryFilterState(params);
@@ -50,11 +59,11 @@ export default async function VehiclesPage({ searchParams }: VehiclesPageProps) 
       {error ? (
         <InventoryEmptyState title="Vehicles could not load" description={error.message} />
       ) : vehicles.length === 0 ? (
-        <InventoryEmptyState title="No inventory available" description="No vehicles are available right now. Check back soon or contact a participating dealership." />
+        <InventoryEmptyState title="No vehicles are available right now." description="Check back soon or contact a participating dealership." />
       ) : filteredVehicles.length === 0 ? (
         <InventoryEmptyState
-          title={hasFilters ? "No vehicles match your filters" : "No inventory available"}
-          description={hasFilters ? "No vehicles match your filters. Try adjusting your search." : "No vehicles are available right now. Check back soon or contact a participating dealership."}
+          title={hasFilters ? "No vehicles match your filters." : "No vehicles are available right now."}
+          description={hasFilters ? "Try adjusting your search." : "Check back soon or contact a participating dealership."}
         />
       ) : (
         <VehicleGrid vehicles={filteredVehicles} />

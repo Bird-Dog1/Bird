@@ -19,7 +19,7 @@ export const metadata = { title: "My rentals" };
 
 export default async function CustomerRentalsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const params = await searchParams;
-  const { user } = await requireRole(["customer", "admin"], "/dashboard/customer/rentals");
+  const { user } = await requireRole(["customer"], "/dashboard/customer/rentals");
   const supabase = await createServerSupabaseClient();
   const checkoutSetup = getPaymentSetupStatus();
   const { data, error } = await supabase

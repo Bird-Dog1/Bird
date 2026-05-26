@@ -41,7 +41,7 @@ function photosFromForm(formData: FormData) {
 }
 
 export async function saveDealershipSettings(formData: FormData) {
-  await requireRole(["dealer", "admin"]);
+  await requireRole(["dealer"]);
   const supabase = await createServerSupabaseClient();
   const dealershipId = formString(formData, "dealership_id");
   const values = {
@@ -100,7 +100,7 @@ function vehicleValues(formData: FormData) {
 }
 
 export async function createVehicle(formData: FormData) {
-  await requireRole(["dealer", "admin"]);
+  await requireRole(["dealer"]);
   const supabase = await createServerSupabaseClient();
   const dealershipId = formString(formData, "dealership_id");
   if (!dealershipId) redirect("/dashboard/dealer/inventory/new?error=Select%20a%20dealership%20first." as Route);
@@ -116,7 +116,7 @@ export async function createVehicle(formData: FormData) {
 }
 
 export async function updateVehicle(formData: FormData) {
-  await requireRole(["dealer", "admin"]);
+  await requireRole(["dealer"]);
   const supabase = await createServerSupabaseClient();
   const vehicleId = formString(formData, "vehicle_id");
   const redirectPath = `/dashboard/dealer/inventory/${vehicleId}/edit`;
@@ -129,7 +129,7 @@ export async function updateVehicle(formData: FormData) {
 }
 
 export async function updateApplicationStatus(formData: FormData) {
-  await requireRole(["dealer", "admin"]);
+  await requireRole(["dealer"]);
   const supabase = await createServerSupabaseClient();
   const applicationId = formString(formData, "application_id");
   const submittedStatus = formString(formData, "status");
@@ -147,7 +147,7 @@ export async function updateApplicationStatus(formData: FormData) {
 }
 
 export async function convertApplicationToRental(formData: FormData) {
-  await requireRole(["dealer", "admin"]);
+  await requireRole(["dealer"]);
   const supabase = await createServerSupabaseClient();
   const applicationId = formString(formData, "application_id");
   const { data: application, error: applicationError } = await supabase

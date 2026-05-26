@@ -13,7 +13,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Applications" };
 export default async function DealerApplicationsPage() {
-  const { user, profile } = await requireRole(["dealer", "admin"], "/dashboard/dealer/applications");
+  const { user, profile } = await requireRole(["dealer"], "/dashboard/dealer/applications");
   const supabase = await createServerSupabaseClient();
   const { data: dealerships, error: dealershipError } = await listAccessibleDealerships(supabase, user.id, profile.role);
   const ids = dealerships.map((d) => d.id);

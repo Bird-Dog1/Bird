@@ -1,14 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { canAccessRole } from "@/lib/auth/roles";
 import { getOptionalSupabaseEnv } from "@/lib/env";
 import { type AppRole } from "@/types/app";
 
 const authRoutes = ["/login", "/signup"];
 const publicRoutes = ["/", "/vehicles", "/auth/callback", "/auth/auth-code-error"];
 const roleRoutes: Array<{ prefix: string; roles: AppRole[] }> = [
-  { prefix: "/dashboard/customer", roles: ["customer", "admin"] },
-  { prefix: "/dashboard/dealer", roles: ["dealer", "admin"] },
+  { prefix: "/dashboard/customer", roles: ["customer"] },
+  { prefix: "/dashboard/dealer", roles: ["dealer"] },
   { prefix: "/dashboard/admin", roles: ["admin"] },
 ];
 
@@ -87,12 +88,12 @@ export async function updateSession(request: NextRequest) {
   if (user && route) {
     const { data } = await supabase
       .from("profiles")
-      .select("role")
+      .select("email,role")
       .eq("id", user.id)
       .single();
-    const profile = data as { role: AppRole } | null;
+    const profile = data as { email: string | null; role: AppRole } | null;
 
-    if (!profile || !route.roles.includes(profile.role)) {
+    if (!route.roles.some((role) => canAccessRole(role, user, profile))) {
       return NextResponse.redirect(redirectUrl(request, "/dashboard"));
     }
   }

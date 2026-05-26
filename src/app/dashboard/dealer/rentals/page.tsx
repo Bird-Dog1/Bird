@@ -13,7 +13,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export const metadata = { title: "Active rentals" };
 export default async function DealerRentalsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const params = await searchParams;
-  const { user, profile } = await requireRole(["dealer", "admin"], "/dashboard/dealer/rentals");
+  const { user, profile } = await requireRole(["dealer"], "/dashboard/dealer/rentals");
   const supabase = await createServerSupabaseClient();
   const { data: dealerships, error: dealershipError } = await listAccessibleDealerships(supabase, user.id, profile.role);
   const ids = dealerships.map((d) => d.id);
