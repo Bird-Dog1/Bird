@@ -1,13 +1,110 @@
-import { assignDealerUser, updateDealershipProfile, updateDealershipStatus } from "@/app/dashboard/admin/actions";
-import { MessageBanner } from "@/components/app/message-banner";
-import { StatusBadge } from "@/components/app/status-badge";
-import { TextField } from "@/components/forms/form-field";
-import { SubmitButton } from "@/components/forms/submit-button";
+import Link from "next/link";
+
+import {
+  AdminDataTable,
+  AdminEmptyState,
+  AdminMetricCard,
+  AdminPageHeader,
+  AdminStatusBadge,
+  AdminTableCell,
+} from "@/components/admin/admin-shell";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
+import { countBy, fetchAdminDashboardData } from "@/lib/admin/data";
+import { formatDate } from "@/lib/bird-dog/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-type DealerUserRow = { id: string; profiles: { email: string | null; full_name: string | null } | null };
 export const metadata = { title: "Dealership detail" };
-export default async function AdminDealershipDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; message?: string }> }) { const { id } = await params; const query = await searchParams; await requireRole(["admin"]); const supabase = await createServerSupabaseClient(); const [{ data: dealership, error }, { data: dealerUsers }] = await Promise.all([supabase.from("dealerships").select("*").eq("id", id).maybeSingle(), supabase.from("dealer_users").select("id, profiles (id, email, full_name, phone, role)").eq("dealership_id", id)]); if (error || !dealership) return <MessageBanner error={error?.message ?? "Dealership not found."} />; const users = (dealerUsers ?? []) as DealerUserRow[]; return <div className="space-y-6"><div><p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">Dealership detail</p><h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">{dealership.name}</h1><div className="mt-3"><StatusBadge value={dealership.suspended ? "suspended" : dealership.approved ? "approved" : "pending"} /></div></div><MessageBanner error={query.error} message={query.message} /><div className="grid gap-6 lg:grid-cols-[1fr_0.7fr]"><Card className="border-white/15"><CardHeader><CardTitle>Dealership profile</CardTitle></CardHeader><CardContent><form action={updateDealershipProfile} className="grid gap-5"><input name="dealership_id" type="hidden" value={dealership.id} /><div className="grid gap-4 md:grid-cols-2"><TextField defaultValue={dealership.name} label="Name" name="name" required /><TextField defaultValue={dealership.phone ?? ""} label="Phone" name="phone" /><TextField defaultValue={dealership.website ?? ""} label="Website" name="website" /><TextField defaultValue={dealership.address ?? ""} label="Address" name="address" /><TextField defaultValue={dealership.city} label="City" name="city" required /><TextField defaultValue={dealership.state} label="State" maxLength={2} name="state" required /><TextField defaultValue={dealership.zip ?? ""} label="ZIP" name="zip" /></div><SubmitButton pendingLabel="Saving profile...">Save profile</SubmitButton></form></CardContent></Card><div className="space-y-6"><Card className="border-white/15"><CardHeader><CardTitle>Approval controls</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2"><StatusForm actionValue="approve" dealershipId={dealership.id} label="Approve" /><StatusForm actionValue="suspend" dealershipId={dealership.id} label="Suspend" /><StatusForm actionValue="unsuspend" dealershipId={dealership.id} label="Unsuspend" /></CardContent></Card><Card className="border-white/15"><CardHeader><CardTitle>Dealer users</CardTitle></CardHeader><CardContent className="space-y-4"><div className="grid gap-2">{users.length === 0 ? <p className="text-sm text-muted-foreground">No dealer users assigned.</p> : users.map((dealerUser) => <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm" key={dealerUser.id}>{dealerUser.profiles?.full_name ?? dealerUser.profiles?.email}</div>)}</div><form action={assignDealerUser} className="grid gap-4"><input name="dealership_id" type="hidden" value={dealership.id} /><TextField label="Assign user by email" name="email" required type="email" /><SubmitButton pendingLabel="Assigning...">Assign dealer user</SubmitButton></form></CardContent></Card></div></div></div>; }
-function StatusForm({ actionValue, dealershipId, label }: { actionValue: string; dealershipId: string; label: string }) { return <form action={updateDealershipStatus}><input name="dealership_id" type="hidden" value={dealershipId} /><input name="action" type="hidden" value={actionValue} /><SubmitButton pendingLabel="Saving..." variant="outline">{label}</SubmitButton></form>; }
+export default async function AdminDealershipDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  await requireRole(["admin"]);
+  const supabase = await createServerSupabaseClient();
+  const data = await fetchAdminDashboardData(supabase);
+  const dealership = data.dealerships.find((item) => item.id === id);
+
+  if (!dealership) {
+    return <AdminEmptyState description="No records found yet." title="Dealership not found" />;
+  }
+
+  const dealerUsers = data.dealerUsers.filter((dealerUser) => dealerUser.dealership_id === id);
+  const vehicles = data.vehicles.filter((vehicle) => vehicle.dealership_id === id);
+  const applications = data.applications.filter((application) => application.dealership_id === id);
+  const rentals = data.rentals.filter((rental) => rental.dealership_id === id);
+
+  return (
+    <div className="space-y-5">
+      <AdminPageHeader
+        description="Read-only dealership detail. Approval and assignment controls are intentionally excluded from this owner dashboard."
+        eyebrow="Dealership detail"
+        title={dealership.name}
+      >
+        <AdminStatusBadge value={dealership.suspended ? "suspended" : dealership.approved ? "approved" : "pending"} />
+      </AdminPageHeader>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <AdminMetricCard label="Vehicles" value={vehicles.length} />
+        <AdminMetricCard label="Applications" value={applications.length} />
+        <AdminMetricCard label="Active rentals" value={countBy(rentals, (rental) => rental.active)} />
+        <AdminMetricCard label="Payment activity" value={data.payments.length ? "Available" : "No records"} />
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Dealership profile</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            <Info label="Name" value={dealership.name} />
+            <Info label="Phone" value={dealership.phone} />
+            <Info label="Website" value={dealership.website} />
+            <Info label="Address" value={dealership.address} />
+            <Info label="City" value={dealership.city} />
+            <Info label="State" value={dealership.state} />
+            <Info label="ZIP" value={dealership.zip} />
+            <Info label="Created" value={formatDate(dealership.created_at)} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Dealer users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AdminDataTable
+              columns={["User", "Assigned"]}
+              empty={<AdminEmptyState description="No records found yet." />}
+              rows={dealerUsers.map((dealerUser) => {
+                const profile = data.profiles.find((user) => user.id === dealerUser.user_id);
+
+                return (
+                  <>
+                    <AdminTableCell>{profile?.full_name ?? profile?.email ?? "User"}</AdminTableCell>
+                    <AdminTableCell>{formatDate(dealerUser.created_at)}</AdminTableCell>
+                  </>
+                );
+              })}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Button asChild variant="outline">
+        <Link href="/dashboard/admin/dealerships">Back to dealerships</Link>
+      </Button>
+    </div>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 font-medium">{value || "Not provided"}</p>
+    </div>
+  );
+}

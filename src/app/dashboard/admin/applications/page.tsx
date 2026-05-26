@@ -1,12 +1,87 @@
-import { EmptyState } from "@/components/app/empty-state";
-import { StatusBadge } from "@/components/app/status-badge";
+import Link from "next/link";
+import type { Route } from "next";
+
+import {
+  AdminDataTable,
+  AdminEmptyState,
+  AdminPageHeader,
+  AdminStatusBadge,
+  AdminTableCell,
+} from "@/components/admin/admin-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
-import { formatCurrency, formatDate, vehicleTitle } from "@/lib/bird-dog/format";
-import type { ApplicationWithRelations } from "@/lib/bird-dog/types";
+import { fetchAdminDashboardData, includesSearch } from "@/lib/admin/data";
+import { formatDate, vehicleTitle } from "@/lib/bird-dog/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "All applications" };
-export default async function AdminApplicationsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) { const params = await searchParams; await requireRole(["admin"]); const supabase = await createServerSupabaseClient(); let query = supabase.from("rental_applications").select("*, vehicles (id, vin, year, make, model, trim, monthly_price, deposit, city, state), dealerships (id, name, phone), profiles (id, email, full_name, phone), application_documents (id, application_id, document_type, file_url, created_at)").order("created_at", { ascending: false }); if (params.q) query = query.or(`status.ilike.%${params.q}%,customer_notes.ilike.%${params.q}%`); const { data, error } = await query; const apps = (data ?? []) as ApplicationWithRelations[]; return <div className="space-y-6"><div><p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">Admin console</p><h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">All applications</h1><p className="mt-2 text-muted-foreground">Search and audit applications platform-wide.</p></div><Search value={params.q} />{error ? <EmptyState title="Applications could not load" description={error.message} /> : apps.length ? <div className="grid gap-4">{apps.map((app) => <Card className="transition hover:border-white/20" key={app.id}><CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><CardTitle>{app.vehicles ? vehicleTitle(app.vehicles) : "Vehicle unavailable"}</CardTitle><p className="text-sm text-muted-foreground">{app.profiles?.email ?? "Customer"} · {app.dealerships?.name ?? "Dealership"} · {formatDate(app.created_at)}</p></div><StatusBadge value={app.status} /></CardHeader><CardContent><p className="text-sm text-muted-foreground">{formatCurrency(app.vehicles?.monthly_price)}/mo · {app.application_documents.length} documents</p></CardContent></Card>)}</div> : <EmptyState title="No applications found" description="Applications will appear after customers apply." />}</div>; }
-function Search({ value }: { value?: string }) { return <form className="flex gap-2 rounded-[2rem] border border-white/10 bg-card/85 p-3 shadow-2xl shadow-black/20"><input className="flex h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground shadow-inner shadow-black/20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50" defaultValue={value ?? ""} name="q" placeholder="Search status or notes" /><Button type="submit">Search</Button></form>; }
+export default async function AdminApplicationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const params = await searchParams;
+  await requireRole(["admin"]);
+  const supabase = await createServerSupabaseClient();
+  const data = await fetchAdminDashboardData(supabase);
+  const query = params.q?.trim() ?? "";
+  const applications = query
+    ? data.applications.filter(
+        (application) =>
+          includesSearch(application.status, query) ||
+          includesSearch(application.profiles?.email, query) ||
+          includesSearch(application.profiles?.full_name, query) ||
+          includesSearch(application.dealerships?.name, query) ||
+          includesSearch(application.vehicles?.vin, query),
+      )
+    : data.applications;
+
+  return (
+    <div className="space-y-5">
+      <AdminPageHeader
+        description="Read-only application queue across customers, vehicles, dealerships, approval statuses, and submitted documents."
+        title="Applications"
+      />
+      <Search value={query} />
+      <AdminDataTable
+        columns={["Applicant", "Email / Phone", "Vehicle", "Dealership", "Status", "Submitted", "Approval", "Details"]}
+        empty={<AdminEmptyState description="No records found yet." />}
+        rows={applications.map((application) => (
+          <>
+            <AdminTableCell className="font-semibold">
+              {application.profiles?.full_name ?? "Not provided"}
+            </AdminTableCell>
+            <AdminTableCell>
+              <span className="block">{application.profiles?.email ?? "Not provided"}</span>
+              <span className="text-muted-foreground">{application.profiles?.phone ?? "No phone"}</span>
+            </AdminTableCell>
+            <AdminTableCell>{application.vehicles ? vehicleTitle(application.vehicles) : "Vehicle unavailable"}</AdminTableCell>
+            <AdminTableCell>{application.dealerships?.name ?? "Dealership"}</AdminTableCell>
+            <AdminTableCell><AdminStatusBadge value={application.status} /></AdminTableCell>
+            <AdminTableCell>{formatDate(application.created_at)}</AdminTableCell>
+            <AdminTableCell>{application.status === "approved" ? "Approved" : application.status === "denied" ? "Denied" : "Pending"}</AdminTableCell>
+            <AdminTableCell>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/dashboard/admin/applications/${application.id}` as Route}>View details</Link>
+              </Button>
+            </AdminTableCell>
+          </>
+        ))}
+      />
+    </div>
+  );
+}
+
+function Search({ value }: { value?: string }) {
+  return (
+    <form className="flex gap-2 rounded-[2rem] border border-white/10 bg-card/85 p-3 shadow-2xl shadow-black/20">
+      <input
+        className="flex h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground shadow-inner shadow-black/20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        defaultValue={value ?? ""}
+        name="q"
+        placeholder="Search applicant, status, VIN, or dealership"
+      />
+      <Button type="submit">Search</Button>
+    </form>
+  );
+}

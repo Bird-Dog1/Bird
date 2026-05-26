@@ -1,15 +1,91 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { updateDealershipStatus } from "@/app/dashboard/admin/actions";
-import { EmptyState } from "@/components/app/empty-state";
-import { MessageBanner } from "@/components/app/message-banner";
-import { StatusBadge } from "@/components/app/status-badge";
-import { SubmitButton } from "@/components/forms/submit-button";
+import {
+  AdminDataTable,
+  AdminEmptyState,
+  AdminPageHeader,
+  AdminStatusBadge,
+  AdminTableCell,
+} from "@/components/admin/admin-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
+import { countBy, fetchAdminDashboardData, includesSearch } from "@/lib/admin/data";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Dealership approvals" };
-export default async function AdminDealershipsPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string; q?: string }> }) { const params = await searchParams; await requireRole(["admin"]); const supabase = await createServerSupabaseClient(); let query = supabase.from("dealerships").select("*").order("created_at", { ascending: false }); if (params.q) query = query.or(`name.ilike.%${params.q}%,city.ilike.%${params.q}%,state.ilike.%${params.q}%`); const { data: dealerships, error } = await query; return <div className="space-y-6"><div><p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">Admin console</p><h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">Dealership approval</h1><p className="mt-2 text-muted-foreground">Approve, suspend, and inspect dealership accounts.</p></div><MessageBanner error={params.error} message={params.message} /><form className="flex gap-2 rounded-[2rem] border border-white/10 bg-card/85 p-3 shadow-2xl shadow-black/20"><input className="flex h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground shadow-inner shadow-black/20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50" defaultValue={params.q ?? ""} name="q" placeholder="Search dealerships" /><Button type="submit">Search</Button></form>{error ? <EmptyState title="Dealerships could not load" description={error.message} /> : dealerships && dealerships.length > 0 ? <div className="grid gap-4">{dealerships.map((dealership) => <Card className="transition hover:border-white/20" key={dealership.id}><CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><CardTitle>{dealership.name}</CardTitle><p className="text-sm text-muted-foreground">{dealership.city}, {dealership.state}</p></div><StatusBadge value={dealership.suspended ? "suspended" : dealership.approved ? "approved" : "pending"} /></CardHeader><CardContent className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div className="flex flex-wrap gap-2"><StatusForm actionValue="approve" dealershipId={dealership.id} label="Approve" /><StatusForm actionValue="suspend" dealershipId={dealership.id} label="Suspend" /><StatusForm actionValue="unsuspend" dealershipId={dealership.id} label="Unsuspend" /></div><Button asChild variant="outline"><Link href={`/dashboard/admin/dealerships/${dealership.id}` as Route}>Details</Link></Button></CardContent></Card>)}</div> : <EmptyState title="No dealerships found" description="Dealership profiles will appear after dealer setup." />}</div>; }
-function StatusForm({ actionValue, dealershipId, label }: { actionValue: string; dealershipId: string; label: string }) { return <form action={updateDealershipStatus}><input name="dealership_id" type="hidden" value={dealershipId} /><input name="action" type="hidden" value={actionValue} /><SubmitButton pendingLabel="Saving..." size="sm" variant="outline">{label}</SubmitButton></form>; }
+export default async function AdminDealershipsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const params = await searchParams;
+  await requireRole(["admin"]);
+  const supabase = await createServerSupabaseClient();
+  const data = await fetchAdminDashboardData(supabase);
+  const query = params.q?.trim() ?? "";
+  const dealerships = query
+    ? data.dealerships.filter(
+        (dealership) =>
+          includesSearch(dealership.name, query) ||
+          includesSearch(dealership.city, query) ||
+          includesSearch(dealership.state, query),
+      )
+    : data.dealerships;
+
+  return (
+    <div className="space-y-5">
+      <AdminPageHeader
+        description="Read-only dealership coverage, contact health, inventory depth, applications, rentals, and payment activity when records exist."
+        title="Dealerships"
+      />
+      <Search value={query} />
+      <AdminDataTable
+        columns={[
+          "Dealership",
+          "Contact",
+          "Location",
+          "Vehicles",
+          "Applications",
+          "Active rentals",
+          "Payment activity",
+          "Status",
+          "Details",
+        ]}
+        empty={<AdminEmptyState description="No records found yet." />}
+        rows={dealerships.map((dealership) => (
+          <>
+            <AdminTableCell className="font-semibold">{dealership.name}</AdminTableCell>
+            <AdminTableCell>{dealership.phone ?? "Not provided"}</AdminTableCell>
+            <AdminTableCell>{[dealership.city, dealership.state].filter(Boolean).join(", ")}</AdminTableCell>
+            <AdminTableCell>{countBy(data.vehicles, (vehicle) => vehicle.dealership_id === dealership.id)}</AdminTableCell>
+            <AdminTableCell>{countBy(data.applications, (application) => application.dealership_id === dealership.id)}</AdminTableCell>
+            <AdminTableCell>{countBy(data.rentals, (rental) => rental.dealership_id === dealership.id && rental.active)}</AdminTableCell>
+            <AdminTableCell>{data.payments.length ? "Payment records available" : "No payment records"}</AdminTableCell>
+            <AdminTableCell>
+              <AdminStatusBadge value={dealership.suspended ? "suspended" : dealership.approved ? "approved" : "pending"} />
+            </AdminTableCell>
+            <AdminTableCell>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/dashboard/admin/dealerships/${dealership.id}` as Route}>View details</Link>
+              </Button>
+            </AdminTableCell>
+          </>
+        ))}
+      />
+    </div>
+  );
+}
+
+function Search({ value }: { value?: string }) {
+  return (
+    <form className="flex gap-2 rounded-[2rem] border border-white/10 bg-card/85 p-3 shadow-2xl shadow-black/20">
+      <input
+        className="flex h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground shadow-inner shadow-black/20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        defaultValue={value ?? ""}
+        name="q"
+        placeholder="Search dealership, city, or state"
+      />
+      <Button type="submit">Search</Button>
+    </form>
+  );
+}
